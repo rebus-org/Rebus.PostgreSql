@@ -2,11 +2,10 @@ services:
   - postgresql95
 
 install:
-- cmd: >
-    SET PGUSER=postgres
-    SET PGPASSWORD=Password12!
-    PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
-    createdb rebus2_test
+- cmd: SET PGUSER=postgres
+- cmd: SET PGPASSWORD=Password12!
+- cmd: PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
+- cmd: createdb rebus2_test
 
 before_build:
   - nuget restore
