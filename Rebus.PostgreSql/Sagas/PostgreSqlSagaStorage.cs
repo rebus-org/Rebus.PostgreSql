@@ -109,6 +109,10 @@ CREATE INDEX ON ""{_indexTableName}"" (""saga_id"");
             }
         }
 
+        /// <summary>
+        /// Finds an already-existing instance of the given saga data type that has a property with the given <paramref name="propertyName" />
+        /// whose value matches <paramref name="propertyValue" />. Returns null if no such instance could be found
+        /// </summary>
         public async Task<ISagaData> Find(Type sagaDataType, string propertyName, object propertyValue)
         {
             using (var connection = await _connectionHelper.GetConnection())
@@ -174,6 +178,10 @@ SELECT s.""data""
             return Convert.ChangeType(propertyValue, typeof(Guid));
         }
 
+        /// <summary>
+        /// Inserts the given saga data as a new instance. Throws a <see cref="T:Rebus.Exceptions.ConcurrencyException" /> if another saga data instance
+        /// already exists with a correlation property that shares a value with this saga data.
+        /// </summary>
         public async Task Insert(ISagaData sagaData, IEnumerable<ISagaCorrelationProperty> correlationProperties)
         {
             if (sagaData.Id == Guid.Empty)
@@ -225,6 +233,11 @@ INSERT
             }
         }
 
+        /// <summary>
+        /// Updates the already-existing instance of the given saga data, throwing a <see cref="T:Rebus.Exceptions.ConcurrencyException" /> if another
+        /// saga data instance exists with a correlation property that shares a value with this saga data, or if the saga data
+        /// instance no longer exists.
+        /// </summary>
         public async Task Update(ISagaData sagaData, IEnumerable<ISagaCorrelationProperty> correlationProperties)
         {
             using (var connection = await _connectionHelper.GetConnection())
@@ -283,6 +296,9 @@ UPDATE ""{_dataTableName}""
             }
         }
 
+        /// <summary>
+        /// Deletes the saga data instance, throwing a <see cref="T:Rebus.Exceptions.ConcurrencyException" /> if the instance no longer exists
+        /// </summary>
         public async Task Delete(ISagaData sagaData)
         {
             using (var connection = await _connectionHelper.GetConnection())

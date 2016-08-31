@@ -19,6 +19,8 @@ namespace Rebus.PostgreSql
         /// </summary>
         public PostgresConnection(NpgsqlConnection currentConnection, NpgsqlTransaction currentTransaction)
         {
+            if (currentConnection == null) throw new ArgumentNullException(nameof(currentConnection));
+            if (currentTransaction == null) throw new ArgumentNullException(nameof(currentTransaction));
             _currentConnection = currentConnection;
             _currentTransaction = currentTransaction;
         }
@@ -47,25 +49,22 @@ namespace Rebus.PostgreSql
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
             if (_disposed) return;
 
             try
             {
-                if (disposing)
+                if (!_completed)
                 {
-                    if (!_completed)
+                    // must never fail!
+                    try
                     {
                         _currentTransaction.Rollback();
                     }
-                    _currentTransaction.Dispose();
-                    _currentConnection.Dispose();
+                    catch { }
                 }
+
+                _currentTransaction.Dispose();
+                _currentConnection.Dispose();
             }
             finally
             {

@@ -64,6 +64,9 @@ CREATE TABLE ""{_tableName
             }
         }
 
+        /// <summary>
+        /// Gets all destination addresses for the given topic
+        /// </summary>
         public async Task<string[]> GetSubscriberAddresses(string topic)
         {
             using (var connection = await _connectionHelper.GetConnection())
@@ -87,6 +90,9 @@ CREATE TABLE ""{_tableName
             }
         }
 
+        /// <summary>
+        /// Registers the given <paramref name="subscriberAddress" /> as a subscriber of the given topic
+        /// </summary>
         public async Task RegisterSubscriber(string topic, string subscriberAddress)
         {
             using (var connection = await _connectionHelper.GetConnection())
@@ -111,6 +117,9 @@ CREATE TABLE ""{_tableName
             }
         }
 
+        /// <summary>
+        /// Unregisters the given <paramref name="subscriberAddress" /> as a subscriber of the given topic
+        /// </summary>
         public async Task UnregisterSubscriber(string topic, string subscriberAddress)
         {
             using (var connection = await _connectionHelper.GetConnection())

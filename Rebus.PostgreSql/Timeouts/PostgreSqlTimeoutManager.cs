@@ -36,6 +36,9 @@ namespace Rebus.PostgreSql.Timeouts
             _log = rebusLoggerFactory.GetCurrentClassLogger();
         }
 
+        /// <summary>
+        /// Stores the message with the given headers and body data, delaying it until the specified <paramref name="approximateDueTime" />
+        /// </summary>
         public async Task Defer(DateTimeOffset approximateDueTime, Dictionary<string, string> headers, byte[] body)
         {
             using (var connection = await _connectionHelper.GetConnection())
@@ -57,6 +60,9 @@ INSERT INTO ""{_tableName}"" (""due_time"", ""headers"", ""body"") VALUES (@due_
             }
         }
 
+        /// <summary>
+        /// Gets due messages as of now, given the approximate due time that they were stored with when <see cref="M:Rebus.Timeouts.ITimeoutManager.Defer(System.DateTimeOffset,System.Collections.Generic.Dictionary{System.String,System.String},System.Byte[])" /> was called
+        /// </summary>
         public async Task<DueMessagesResult> GetDueMessages()
         {
             var connection = await _connectionHelper.GetConnection();

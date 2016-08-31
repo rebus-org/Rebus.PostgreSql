@@ -30,6 +30,9 @@ namespace Rebus.PostgreSql.Sagas
             _tableName = tableName;
         }
 
+        /// <summary>
+        /// Saves the <paramref name="sagaData"/> snapshot and the accompanying <paramref name="sagaAuditMetadata"/>
+        /// </summary>
         public async Task Save(ISagaData sagaData, Dictionary<string, string> sagaAuditMetadata)
         {
             using (var connection = await _connectionHelper.GetConnection())
