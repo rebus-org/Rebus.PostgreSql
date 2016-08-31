@@ -1,6 +1,5 @@
 ﻿using System;
 using Npgsql;
-using Rebus.Tests;
 using Rebus.Tests.Contracts;
 
 namespace Rebus.PostgreSql.Tests
