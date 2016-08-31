@@ -1,2 +1,5 @@
+services:
+  - postgresql95
+
 before_build:
   - nuget restore
