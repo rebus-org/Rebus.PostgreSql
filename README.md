@@ -1,4 +1,4 @@
-# Rebus.TODO
+# Rebus.PostgreSql
 
 Provides a PostgreSQL-based persistence for [Rebus](https://github.com/rebus-org/Rebus) for
 
