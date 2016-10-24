@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Npgsql;
 
 namespace Rebus.PostgreSql
@@ -9,7 +10,7 @@ namespace Rebus.PostgreSql
     public class PostgresConnection : IDisposable
     {
         readonly NpgsqlConnection _currentConnection;
-        readonly NpgsqlTransaction _currentTransaction;
+        NpgsqlTransaction _currentTransaction;
 
         bool _completed;
         bool _disposed;
@@ -38,33 +39,50 @@ namespace Rebus.PostgreSql
         /// <summary>
         /// Completes the transaction
         /// </summary>
-        public void Complete()
+
+        public async Task Complete()
         {
-            _currentTransaction.Commit();
-            _completed = true;
+            if (_currentTransaction != null)
+            {
+                using (_currentTransaction)
+                {
+                    _currentTransaction.Commit();
+                    _currentTransaction = null;
+                }
+            }
         }
+        
+        
 
         /// <summary>
         /// Rolls back the transaction if it hasn't been completed
         /// </summary>
         public void Dispose()
         {
+            if (_currentTransaction != null) return;
             if (_disposed) return;
 
             try
             {
-                if (!_completed)
+                try
                 {
-                    // must never fail!
-                    try
+                    if (_currentTransaction != null)
                     {
-                        _currentTransaction.Rollback();
+                        using (_currentTransaction)
+                        {
+                            try
+                            {
+                                _currentTransaction.Rollback();
+                            }
+                            catch { }
+                            _currentTransaction = null;
+                        }
                     }
-                    catch { }
                 }
-
-                _currentTransaction.Dispose();
-                _currentConnection.Dispose();
+                finally
+                {
+                    _currentConnection.Dispose();
+                }
             }
             finally
             {
