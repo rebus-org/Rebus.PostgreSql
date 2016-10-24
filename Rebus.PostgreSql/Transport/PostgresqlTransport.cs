@@ -281,7 +281,7 @@ CREATE INDEX idx_expiration_{_tableName} ON {_tableName}
 );
 ");
 
-                connection.Complete().Wait();
+                connection.Complete();
             }
 
         }
@@ -320,7 +320,7 @@ CREATE INDEX idx_expiration_{_tableName} ON {_tableName}
                     async () =>
                     {
                         var dbConnection = await _connectionHelper.GetConnection();
-                        context.OnCommitted(async () => await dbConnection.Complete());
+                        context.OnCommitted(async () => dbConnection.Complete());
                         context.OnDisposed(() =>
                         {
                             dbConnection.Dispose();
