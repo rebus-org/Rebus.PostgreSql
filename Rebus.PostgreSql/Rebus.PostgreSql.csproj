@@ -60,7 +60,6 @@
     <Compile Include="Subscriptions\PostgreSqlSubscriptionStorage.cs" />
     <Compile Include="Timeouts\PostgreSqlTimeoutManager.cs" />
     <Compile Include="Properties\AssemblyInfo_Patch.cs" />
-    <Compile Include="Transport\DbConnectionProvider.cs" />
     <Compile Include="Transport\PostgresqlTransport.cs" />
     <None Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
