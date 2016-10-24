@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Categories.cs" />
     <Compile Include="Sagas\PostgreSqlBasicLoadAndSaveAndFindOperations.cs" />
     <Compile Include="Sagas\ConcurrencyHandling.cs" />
     <Compile Include="Sagas\PostgreSqlSagaSnapshotTest.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="PostgreSqlTestHelper.cs" />
     <Compile Include="TestCategory.cs" />
     <Compile Include="Timeouts\TestPostgreSqlTimeoutManager.cs" />
+    <Compile Include="Transport\SqlTransportFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
