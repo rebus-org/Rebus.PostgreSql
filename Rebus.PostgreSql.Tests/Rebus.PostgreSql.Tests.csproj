@@ -80,7 +80,10 @@
     <Compile Include="PostgreSqlTestHelper.cs" />
     <Compile Include="TestCategory.cs" />
     <Compile Include="Timeouts\TestPostgreSqlTimeoutManager.cs" />
-    <Compile Include="Transport\SqlTransportFactory.cs" />
+    <Compile Include="Transport\TestPostgreSqlTransportReceivePerformance.cs" />
+    <Compile Include="Transport\PostgreSqlTransportTests.cs" />
+    <Compile Include="Transport\TestPostgreSqlTransport.cs" />
+    <Compile Include="Transport\TestPostgreSqlTransportCleanup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
