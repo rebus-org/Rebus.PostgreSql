@@ -42,41 +42,36 @@ namespace Rebus.PostgreSql
 
         public void Complete()
         {
-            if (_currentTransaction != null)
+            if (_currentTransaction == null) return;
+            using (_currentTransaction)
             {
-                using (_currentTransaction)
-                {
-                    _currentTransaction.Commit();
-                    _currentTransaction = null;
-                }
+                _currentTransaction.Commit();
+                _currentTransaction = null;
             }
         }
-        
-        
+
+
 
         /// <summary>
         /// Rolls back the transaction if it hasn't been completed
         /// </summary>
         public void Dispose()
         {
-            if (_currentTransaction != null) return;
             if (_disposed) return;
 
             try
             {
                 try
                 {
-                    if (_currentTransaction != null)
+                    if (_currentTransaction == null) return;
+                    using (_currentTransaction)
                     {
-                        using (_currentTransaction)
+                        try
                         {
-                            try
-                            {
-                                _currentTransaction.Rollback();
-                            }
-                            catch { }
-                            _currentTransaction = null;
+                            _currentTransaction.Rollback();
                         }
+                        catch { }
+                        _currentTransaction = null;
                     }
                 }
                 finally
