@@ -19,15 +19,15 @@ namespace Rebus.PostgreSql.Tests.Transport
 
 
         [TestFixture, Category(Categories.PostgreSql)]
-        public class SqlServerTransportBasicSendReceive : BasicSendReceive<PostgreSqlTransportFactory> { }
+        public class PostgreSqlTransportBasicSendReceive : BasicSendReceive<PostgreSqlTransportFactory> { }
 
         [TestFixture, Category(Categories.PostgreSql)]
-        public class SqlServerTransportMessageExpiration : MessageExpiration<PostgreSqlTransportFactory> { }
+        public class PostgreSqlTransportMessageExpiration : MessageExpiration<PostgreSqlTransportFactory> { }
 
 
         public ITransport CreateOneWayClient()
         {
-            var tableName = ("rebus_messages_" + TestConfig.Suffix).TrimEnd('-');
+            var tableName = ("rebus_messages_" + TestConfig.Suffix).TrimEnd('_');
              _tablesToDrop.Add(tableName);
 
             var consoleLoggerFactory = new ConsoleLoggerFactory(false);
