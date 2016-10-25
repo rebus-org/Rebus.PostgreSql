@@ -13,6 +13,7 @@ using Rebus.Messages;
 using Rebus.Threading;
 using Rebus.Transport;
 using System.Linq;
+using System.Reflection;
 using Npgsql;
 using Rebus.Extensions;
 using Rebus.Serialization;
@@ -40,7 +41,7 @@ namespace Rebus.PostgreSql.Transport
         /// </summary>
         public static readonly TimeSpan DefaultExpiredMessagesCleanupInterval = TimeSpan.FromSeconds(20);
 
-         readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(20);
+         readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(Environment.ProcessorCount);
 
           const int OperationCancelledNumber = 3980;
 
@@ -78,18 +79,20 @@ namespace Rebus.PostgreSql.Transport
          /// </summary>
          public TimeSpan ExpiredMessagesCleanupInterval { get; set; }
 
+        /// <summary>The SQL transport doesn't really have queues, so this function does nothing</summary>
         public void CreateQueue(string address)
         {
-            throw new System.NotImplementedException();
         }
+
+        
 
         public async Task Send(string destinationAddress, TransportMessage message, ITransactionContext context)
         {
             var connection = await GetConnection(context);
 
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = $@"
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = $@"
 INSERT INTO {_tableName}
 (
     recipient,
@@ -105,29 +108,28 @@ VALUES
     @headers,
     @body,
     @priority,
-    now() + @ttlseconds,
-    now() + @visible
+    clock_timestamp() + @visible,
+    clock_timestamp() + @ttlseconds
 )";
 
-                var headers = message.Headers.Clone();
+                    var headers = message.Headers.Clone();
 
-                var priority = GetMessagePriority(headers);
-                var initialVisibilityDelay = GetInitialVisibilityDelay(headers);
-                var ttlSeconds = GetTtlSeconds(headers);
+                    var priority = GetMessagePriority(headers);
+                    var initialVisibilityDelay = new TimeSpan(0, 0, 0, GetInitialVisibilityDelay(headers));
+                    var ttlSeconds = new TimeSpan(0, 0, 0, GetTtlSeconds(headers));
 
-                // must be last because the other functions on the headers might change them
-                var serializedHeaders = HeaderSerializer.Serialize(headers);
+                    // must be last because the other functions on the headers might change them
+                    var serializedHeaders = HeaderSerializer.Serialize(headers);
 
-                command.Parameters.Add("recipient", NpgsqlDbType.Text ).Value = destinationAddress;
-                command.Parameters.Add("headers", NpgsqlDbType.Bytea).Value = serializedHeaders;
-                command.Parameters.Add("body", NpgsqlDbType.Bytea).Value = message.Body;
-                command.Parameters.Add("priority", NpgsqlDbType.Integer).Value = priority;
-                command.Parameters.Add("ttlseconds", NpgsqlDbType.Interval).Value = $"{ttlSeconds} s";
-                command.Parameters.Add("visible", NpgsqlDbType.Interval).Value = $"{initialVisibilityDelay} s";
+                    command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = destinationAddress;
+                    command.Parameters.Add("headers", NpgsqlDbType.Bytea).Value = serializedHeaders;
+                    command.Parameters.Add("body", NpgsqlDbType.Bytea).Value = message.Body;
+                    command.Parameters.Add("priority", NpgsqlDbType.Integer).Value = priority;
+                    command.Parameters.Add("visible", NpgsqlDbType.Interval).Value = initialVisibilityDelay;
+                    command.Parameters.Add("ttlseconds", NpgsqlDbType.Interval).Value = ttlSeconds;
 
-                
-                await command.ExecuteNonQueryAsync();
-            }
+                    await command.ExecuteNonQueryAsync();
+                }
         }
 
         public async Task<TransportMessage> Receive(ITransactionContext context, CancellationToken cancellationToken)
@@ -146,8 +148,8 @@ where id =
 (
     select id from {_tableName}
     where recipient = @recipient
-    and visible < now()
-    and expiration > now()
+    and visible < clock_timestamp()
+    and expiration > clock_timestamp() 
     order by priority asc, id asc
     for update skip locked
     limit 1
@@ -198,11 +200,11 @@ body
                     {
                         command.CommandText =
                             $@"
-	            Delete FROM {_tableName} 
-				WHERE recipient = @recipient 
-				AND [expiration] < getdate()
+	            delete from {_tableName} 
+				where recipient = @recipient 
+				and expiration < clock_timestamp()
 ";
-                        command.Parameters.Add("recipient",  (NpgsqlDbType) DbType.String).Value = _inputQueueName;
+                        command.Parameters.Add("recipient",  NpgsqlDbType.Text).Value = _inputQueueName;
                         affectedRows = await command.ExecuteNonQueryAsync();
                     }
 
@@ -221,12 +223,13 @@ body
             }
         }
 
-        public string Address { get; }
+        public string Address => _inputQueueName;
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <exception cref="RebusApplicationException"></exception>
         public void EnsureTableIsCreated()
         {
             try
@@ -259,8 +262,8 @@ CREATE TABLE {_tableName}
 	id serial NOT NULL,
 	recipient text NOT NULL,
 	priority int NOT NULL,
-    expiration timestamp NOT NULL,
-    visible timestamp NOT NULL,
+    expiration timestamp with time zone NOT NULL,
+    visible timestamp with time zone NOT NULL,
 	headers bytea NOT NULL,
 	body bytea NOT NULL,
     PRIMARY KEY (recipient, priority, id)
@@ -269,15 +272,8 @@ CREATE TABLE {_tableName}
 CREATE INDEX idx_receive_{_tableName} ON {_tableName}
 (
 	recipient ASC,
-	priority ASC,
-    visible ASC,
     expiration ASC,
-	id ASC
-);
-----
-CREATE INDEX idx_expiration_{_tableName} ON {_tableName}
-(
-    expiration ASC
+    visible ASC
 );
 ");
 
