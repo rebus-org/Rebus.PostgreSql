@@ -38,9 +38,7 @@ namespace Rebus.PostgreSql.Tests.Transport
                     .Start();
             }
 
-            [TestCase(100)]
-            //[TestCase(1000)]
-            //[TestCase(1000)]
+            [TestCase(1000)]
             [TestCase(10000, Ignore = "run manually")]
             [TestCase(10000, Ignore = "run manually")]
             [TestCase(10000, Ignore = "run manually")]
