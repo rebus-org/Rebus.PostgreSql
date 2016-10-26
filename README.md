@@ -9,7 +9,7 @@ Provides a PostgreSQL-based persistence for [Rebus](https://github.com/rebus-org
 * timeouts
 * transport
 
-Note:  In your npgsql connection string, if you are using the default settings, set your maximum pool size=30 to avoid connection pool starvation issues.
+Note:  In your npgsql connection string, if you are using the default settings, set your maximum pool size=30 to avoid connection pool exhaustion issues.
 
 ![](https://raw.githubusercontent.com/rebus-org/Rebus/master/artwork/little_rebusbus2_copy-200x200.png)
 
