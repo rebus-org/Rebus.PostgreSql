@@ -41,7 +41,7 @@ namespace Rebus.PostgreSql.Transport
         /// </summary>
         public static readonly TimeSpan DefaultExpiredMessagesCleanupInterval = TimeSpan.FromSeconds(20);
 
-         readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(Environment.ProcessorCount);
+        readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(20);
 
           const int OperationCancelledNumber = 3980;
 
