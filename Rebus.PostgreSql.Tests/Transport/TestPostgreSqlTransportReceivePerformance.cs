@@ -10,6 +10,9 @@ using Rebus.Tests.Contracts.Utilities;
 using Rebus.Logging;
 using Rebus.PostgreSql.Transport;
 
+
+#pragma warning disable 1998
+
 namespace Rebus.PostgreSql.Tests.Transport
 {
         [TestFixture, Category(Categories.PostgreSql)]
@@ -39,9 +42,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             }
 
             [TestCase(1000)]
-            [TestCase(10000, Ignore = "run manually")]
-            [TestCase(10000, Ignore = "run manually")]
-            [TestCase(10000, Ignore = "run manually")]
+            [TestCase(10000, Ignore="enable manually")] 
             public async Task NizzleName(int messageCount)
             {
 
