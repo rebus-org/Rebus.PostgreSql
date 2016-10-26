@@ -41,7 +41,7 @@ namespace Rebus.PostgreSql.Tests
         static string GetConnectionStringForDatabase(string databaseName)
         {
             return Environment.GetEnvironmentVariable("REBUS_POSTGRES")
-                   ?? $"server=localhost; database={databaseName}; user id=postgres; password=postgres;";
+                   ?? $"server=localhost; database={databaseName}; user id=postgres; password=postgres;maximum pool size=30;";
         }
     }
 }
