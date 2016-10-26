@@ -43,7 +43,7 @@ namespace Rebus.PostgreSql.Tests.Transport
                 .Start();
         }
 
-        [TestCase(500)]
+        [TestCase(1000)]
         public async Task NizzleName(int messageCount)
         {
 
@@ -62,7 +62,7 @@ namespace Rebus.PostgreSql.Tests.Transport
 
             _adapter.Bus.Advanced.Workers.SetNumberOfWorkers(3);
 
-            counter.WaitForResetEvent(messageCount / 500 + 20);
+            counter.WaitForResetEvent(messageCount / 500 + 7);
 
             var elapsedSeconds = stopwtach.Elapsed.TotalSeconds;
 
