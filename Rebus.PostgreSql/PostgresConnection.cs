@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -40,7 +41,7 @@ namespace Rebus.PostgreSql
         /// Completes the transaction
         /// </summary>
 
-        public void Complete()
+        public async Task Complete()
         {
             if (_currentTransaction == null) return;
             using (_currentTransaction)

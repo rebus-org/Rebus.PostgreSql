@@ -316,7 +316,7 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
                     async () =>
                     {
                         var dbConnection = await _connectionHelper.GetConnection();
-                        context.OnCommitted(async () => dbConnection.Complete());
+                        context.OnCommitted(async () => await dbConnection.Complete());
                         context.OnDisposed(() =>
                         {
                             dbConnection.Dispose();
