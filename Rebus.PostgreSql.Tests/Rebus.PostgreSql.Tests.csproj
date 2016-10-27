@@ -42,8 +42,8 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Npgsql, Version=3.1.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Npgsql.3.1.7\lib\net45\Npgsql.dll</HintPath>
+    <Reference Include="Npgsql, Version=3.1.8.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.3.1.8\lib\net45\Npgsql.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=3.4.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Categories.cs" />
     <Compile Include="Sagas\PostgreSqlBasicLoadAndSaveAndFindOperations.cs" />
     <Compile Include="Sagas\ConcurrencyHandling.cs" />
     <Compile Include="Sagas\PostgreSqlSagaSnapshotTest.cs" />
@@ -79,6 +80,10 @@
     <Compile Include="PostgreSqlTestHelper.cs" />
     <Compile Include="TestCategory.cs" />
     <Compile Include="Timeouts\TestPostgreSqlTimeoutManager.cs" />
+    <Compile Include="Transport\TestPostgreSqlTransportReceivePerformance.cs" />
+    <Compile Include="Transport\PostgreSqlTransportTests.cs" />
+    <Compile Include="Transport\TestPostgreSqlTransport.cs" />
+    <Compile Include="Transport\TestPostgreSqlTransportCleanup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

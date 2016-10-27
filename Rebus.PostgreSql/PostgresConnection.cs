@@ -1,4 +1,6 @@
 using System;
+using System.Data;
+using System.Threading.Tasks;
 using Npgsql;
 
 namespace Rebus.PostgreSql
@@ -9,7 +11,7 @@ namespace Rebus.PostgreSql
     public class PostgresConnection : IDisposable
     {
         readonly NpgsqlConnection _currentConnection;
-        readonly NpgsqlTransaction _currentTransaction;
+        NpgsqlTransaction _currentTransaction;
 
         bool _completed;
         bool _disposed;
@@ -38,11 +40,18 @@ namespace Rebus.PostgreSql
         /// <summary>
         /// Completes the transaction
         /// </summary>
-        public void Complete()
+
+        public async Task Complete()
         {
-            _currentTransaction.Commit();
-            _completed = true;
+            if (_currentTransaction == null) return;
+            using (_currentTransaction)
+            {
+                _currentTransaction.Commit();
+                _currentTransaction = null;
+            }
         }
+
+
 
         /// <summary>
         /// Rolls back the transaction if it hasn't been completed
@@ -53,18 +62,23 @@ namespace Rebus.PostgreSql
 
             try
             {
-                if (!_completed)
+                try
                 {
-                    // must never fail!
-                    try
+                    if (_currentTransaction == null) return;
+                    using (_currentTransaction)
                     {
-                        _currentTransaction.Rollback();
+                        try
+                        {
+                            _currentTransaction.Rollback();
+                        }
+                        catch { }
+                        _currentTransaction = null;
                     }
-                    catch { }
                 }
-
-                _currentTransaction.Dispose();
-                _currentConnection.Dispose();
+                finally
+                {
+                    _currentConnection.Dispose();
+                }
             }
             finally
             {
