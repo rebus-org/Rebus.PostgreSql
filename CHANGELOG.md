@@ -16,6 +16,10 @@
 
 * Add PostgreSQL transport implementation - thanks [jmkelly]
 
+## 2.2.0
+
+* Add one-way configuration extension for the transport - thanks [jmkelly]
+* Fix nuspec
 
 ---
 
