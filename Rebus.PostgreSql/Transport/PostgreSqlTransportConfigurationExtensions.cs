@@ -47,5 +47,17 @@ namespace Rebus.PostgreSql.Transport
                         .RemoveIncomingStep(s => s.GetType() == typeof(HandleDeferredMessagesStep));
                 });
             }
+
+
+        /// <summary>
+        /// Configures Rebus to use PostgreSql to transport messages as a one-way client (i.e. will not be able to receive any messages).
+        /// The table specified by <paramref name="tableName"/> will be used to store messages.
+        /// The message table will automatically be created if it does not exist.
+        /// </summary>
+        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionStringOrConnectionStringName, string tableName)
+        {
+            Configure(configurer, loggerFactory => new PostgresConnectionHelper(connectionStringOrConnectionStringName), tableName, null);
+            OneWayClientBackdoor.ConfigureOneWayClient(configurer);
+        }
         }
 }
