@@ -27,10 +27,13 @@ namespace Rebus.PostgreSql.Subscriptions
         /// </summary>
         public PostgreSqlSubscriptionStorage(PostgresConnectionHelper connectionHelper, string tableName, bool isCentralized, IRebusLoggerFactory rebusLoggerFactory)
         {
+            if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
+            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
+            if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             _connectionHelper = connectionHelper;
             _tableName = tableName;
             IsCentralized = isCentralized;
-            _log = rebusLoggerFactory.GetCurrentClassLogger();
+            _log = rebusLoggerFactory.GetLogger<PostgreSqlSubscriptionStorage>();
         }
 
         /// <summary>

@@ -21,6 +21,10 @@
 * Add one-way configuration extension for the transport - thanks [jmkelly]
 * Fix nuspec
 
+## 3.0.0
+
+* Update to Rebus 3
+
 ---
 
 [jmkelly]: https://github.com/jmkelly

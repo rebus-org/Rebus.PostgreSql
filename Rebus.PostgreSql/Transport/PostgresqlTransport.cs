@@ -13,7 +13,6 @@ using Rebus.Messages;
 using Rebus.Threading;
 using Rebus.Transport;
 using System.Linq;
-using System.Reflection;
 using Npgsql;
 using Rebus.Extensions;
 using Rebus.Serialization;
@@ -26,26 +25,30 @@ namespace Rebus.PostgreSql.Transport
     /// </summary>
     public class PostgreSqlTransport : ITransport, IInitializable, IDisposable
     {
-        private readonly PostgresConnectionHelper _connectionHelper;
-        private readonly string _tableName;
-        private readonly string _inputQueueName;
-        private readonly IAsyncTaskFactory _asyncTaskFactory;
-        bool _disposed;
-        private ILog _log;
+        const string CurrentConnectionKey = "postgresql-transport-current-connection";
 
-         const string CurrentConnectionKey = "postgresql-transport-current-connection";
-        public const string MessagePriorityHeaderKey = "rbs2-msg-priority";
         static readonly HeaderSerializer HeaderSerializer = new HeaderSerializer();
+
+        readonly PostgresConnectionHelper _connectionHelper;
+        readonly string _tableName;
+        readonly string _inputQueueName;
+        readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(20);
+        readonly IAsyncTask _expiredMessagesCleanupTask;
+        readonly ILog _log;
+
+        bool _disposed;
+
         /// <summary>
-        /// 
+        /// Header key of message priority which happens to be supported by this transport
+        /// </summary>
+        public const string MessagePriorityHeaderKey = "rbs2-msg-priority";
+
+        /// <summary>
+        /// Indicates the default interval between which expired messages will be cleaned up
         /// </summary>
         public static readonly TimeSpan DefaultExpiredMessagesCleanupInterval = TimeSpan.FromSeconds(20);
 
-        readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(20);
-
-          const int OperationCancelledNumber = 3980;
-
-        private readonly IAsyncTask _expiredMessagesCleanupTask;
+        const int OperationCancelledNumber = 3980;
 
         /// <summary>
         /// 
@@ -57,17 +60,21 @@ namespace Rebus.PostgreSql.Transport
         /// <param name="asyncTaskFactory"></param>
         public PostgreSqlTransport(PostgresConnectionHelper connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory)
         {
+            if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
+            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
+            if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
+            if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));
+
+            _log = rebusLoggerFactory.GetLogger<PostgreSqlTransport>();
             _connectionHelper = connectionHelper;
             _tableName = tableName;
             _inputQueueName = inputQueueName;
-            _asyncTaskFactory = asyncTaskFactory;
-            ExpiredMessagesCleanupInterval = DefaultExpiredMessagesCleanupInterval;
-            _expiredMessagesCleanupTask = asyncTaskFactory.Create("ExpiredMessagesCleanup",
-                PerformExpiredMessagesCleanupCycle, intervalSeconds: 60);
+            _expiredMessagesCleanupTask = asyncTaskFactory.Create("ExpiredMessagesCleanup", PerformExpiredMessagesCleanupCycle, intervalSeconds: 60);
 
-            _log = rebusLoggerFactory.GetCurrentClassLogger();
+            ExpiredMessagesCleanupInterval = DefaultExpiredMessagesCleanupInterval;
         }
 
+        /// <inheritdoc />
         public void Initialize()
         {
             if (_inputQueueName == null) return;
@@ -84,8 +91,7 @@ namespace Rebus.PostgreSql.Transport
         {
         }
 
-        
-
+        /// <inheritdoc />
         public async Task Send(string destinationAddress, TransportMessage message, ITransactionContext context)
         {
             var connection = await GetConnection(context);
@@ -209,7 +215,7 @@ body
                     }
 
                     results += affectedRows;
-                    connection.Complete();
+                    await connection.Complete();
 
                     if (affectedRows == 0) break;
                 }
@@ -277,7 +283,7 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
 );
 ");
 
-                connection.Complete();
+                Task.Run(async () => await connection.Complete()).Wait();
             }
 
         }

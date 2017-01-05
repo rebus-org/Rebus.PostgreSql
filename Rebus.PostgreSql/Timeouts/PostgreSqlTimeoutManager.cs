@@ -33,7 +33,7 @@ namespace Rebus.PostgreSql.Timeouts
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             _connectionHelper = connectionHelper;
             _tableName = tableName;
-            _log = rebusLoggerFactory.GetCurrentClassLogger();
+            _log = rebusLoggerFactory.GetLogger<PostgreSqlTimeoutManager>();
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ INSERT INTO ""{_tableName}"" (""due_time"", ""headers"", ""body"") VALUES (@due_
                     await command.ExecuteNonQueryAsync();
                 }
 
-                connection.Complete();
+                await connection.Complete();
             }
         }
 
@@ -113,7 +113,7 @@ FOR UPDATE;
 
                         return new DueMessagesResult(dueMessages, async () =>
                         {
-                            connection.Complete();
+                            await connection.Complete();
                             connection.Dispose();
                         });
                     }
@@ -167,7 +167,7 @@ CREATE INDEX ON ""{_tableName}"" (""due_time"");
                     command.ExecuteNonQuery();
                 }
 
-                connection.Complete();
+                Task.Run(async () => await connection.Complete()).Wait();
             }
         }
     }
