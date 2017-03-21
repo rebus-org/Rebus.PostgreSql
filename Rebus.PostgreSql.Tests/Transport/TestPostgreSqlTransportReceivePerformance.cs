@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Configuration;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Rebus.Activation;
@@ -9,7 +8,6 @@ using Rebus.Config;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Utilities;
 using Rebus.Logging;
-using Rebus.Pipeline;
 using Rebus.PostgreSql.Transport;
 
 

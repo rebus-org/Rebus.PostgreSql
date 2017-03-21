@@ -12,17 +12,16 @@ using Rebus.PostgreSql.Transport;
 using Rebus.Tests.Contracts;
 using Rebus.Threading.TaskParallelLibrary;
 using Rebus.Transport;
-using Timer = System.Timers.Timer;
 
 namespace Rebus.PostgreSql.Tests.Transport
 {
     [TestFixture, Category(Categories.PostgreSql)]
     public class TestPostgreSqlTransport : FixtureBase
     {
-        private readonly string _tableName = "messages" + TestConfig.Suffix;
-        private PostgreSqlTransport _transport;
-        private CancellationToken _cancellationToken;
-        private const string QueueName = "input";
+        readonly string _tableName = "messages" + TestConfig.Suffix;
+        PostgreSqlTransport _transport;
+        CancellationToken _cancellationToken;
+        const string QueueName = "input";
 
         protected override void SetUp()
         {
@@ -101,13 +100,8 @@ namespace Rebus.PostgreSql.Tests.Transport
 
             Console.WriteLine("Receiving {0} messages", numberOfMessages);
 
-            using (var timer = new Timer(1000))
+            using (new Timer(_ => Console.WriteLine("Received: {0} msgs", receivedMessages), null, 0, 1000))
             {
-                timer.Elapsed += delegate
-                {
-                    Console.WriteLine("Received: {0} msgs", receivedMessages);
-                };
-                timer.Start();
 
                 await Task.WhenAll(Enumerable.Range(0, numberOfMessages)
                     .Select(async i =>

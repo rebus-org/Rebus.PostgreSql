@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -137,6 +138,7 @@ VALUES
                 }
         }
 
+        /// <inheritdoc />
         public async Task<TransportMessage> Receive(ITransactionContext context, CancellationToken cancellationToken)
         {
             using (await _bottleneck.Enter(cancellationToken))
@@ -332,6 +334,7 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
         }
 
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed) return;
