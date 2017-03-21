@@ -140,7 +140,7 @@ FOR UPDATE;
                     return;
                 }
 
-                _log.Info("Table '{0}' does not exist - it will be created now", _tableName);
+                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
 
                 using (var command = connection.CreateCommand())
                 {

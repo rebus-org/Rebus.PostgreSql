@@ -72,7 +72,7 @@ namespace Rebus.PostgreSql.Sagas
                         $"The saga data table '{_dataTableName}' does not exist, so the automatic saga schema generation tried to run - but there was already a table named '{_indexTableName}', which was supposed to be created as the index table");
                 }
 
-                _log.Info("Saga tables '{0}' (data) and '{1}' (index) do not exist - they will be created now", _dataTableName, _indexTableName);
+                _log.Info("Saga tables {tableName} (data) and {tableName} (index) do not exist - they will be created now", _dataTableName, _indexTableName);
 
                 using (var command = connection.CreateCommand())
                 {

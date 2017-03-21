@@ -258,11 +258,11 @@ body
 
                 if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
                 {
-                    _log.Info("Database already contains a table named '{0}' - will not create anything", _tableName);
+                    _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
                     return;
                 }
 
-                _log.Info("Table '{0}' does not exist - it will be created now", _tableName);
+                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
 
                 ExecuteCommands(connection, $@"
 CREATE TABLE {_tableName}
