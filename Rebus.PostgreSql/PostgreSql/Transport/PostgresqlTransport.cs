@@ -250,7 +250,7 @@ body
             }
         }
 
-        private void CreateSchema()
+        void CreateSchema()
         {
             using (var connection = _connectionHelper.GetConnection().Result)
             {
