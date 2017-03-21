@@ -1,6 +1,6 @@
 ﻿using Rebus.Auditing.Sagas;
-using Rebus.Config;
 using Rebus.Logging;
+using Rebus.PostgreSql;
 using Rebus.PostgreSql.Sagas;
 using Rebus.PostgreSql.Subscriptions;
 using Rebus.PostgreSql.Timeouts;
@@ -8,7 +8,7 @@ using Rebus.Sagas;
 using Rebus.Subscriptions;
 using Rebus.Timeouts;
 
-namespace Rebus.PostgreSql
+namespace Rebus.Config
 {
     /// <summary>
     /// Configuration extensions for Postgres persistence

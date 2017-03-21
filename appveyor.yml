@@ -1,3 +1,11 @@
+image: Visual Studio 2017
+
+shallow_clone: true
+
+cache:
+  - packages -> **\packages.config
+  - '%LocalAppData%\NuGet\Cache'
+
 services:
   - postgresql95
 
@@ -6,4 +14,9 @@ before_build:
   - SET PGPASSWORD=Password12!
   - PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
   - createdb rebus2_test
-  - nuget restore
+  - appveyor-retry dotnet restore -v Minimal
+
+build_script:
+  - dotnet build Rebus.PostgreSql -c Release 
+  - dotnet build Rebus.PostgreSql.Tests -c Release 
+

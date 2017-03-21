@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
@@ -61,13 +62,13 @@ namespace Rebus.PostgreSql.Sagas
 
                 if (hasDataTable)
                 {
-                    throw new ApplicationException(
+                    throw new RebusApplicationException(
                         $"The saga index table '{_indexTableName}' does not exist, so the automatic saga schema generation tried to run - but there was already a table named '{_dataTableName}', which was supposed to be created as the data table");
                 }
 
                 if (hasIndexTable)
                 {
-                    throw new ApplicationException(
+                    throw new RebusApplicationException(
                         $"The saga data table '{_dataTableName}' does not exist, so the automatic saga schema generation tried to run - but there was already a table named '{_indexTableName}', which was supposed to be created as the index table");
                 }
 
@@ -160,14 +161,13 @@ SELECT s.""data""
                     }
                     catch (Exception exception)
                     {
-                        var message =
-                            $"An error occurred while attempting to deserialize '{data}' into a {sagaDataType}";
+                        var message = $"An error occurred while attempting to deserialize '{data}' into a {sagaDataType}";
 
-                        throw new ApplicationException(message, exception);
+                        throw new RebusApplicationException(exception, message);
                     }
                     finally
                     {
-                        connection.Complete();
+                        await connection.Complete();
                     }
                 }
             }
@@ -217,8 +217,7 @@ INSERT
                     }
                     catch (NpgsqlException exception)
                     {
-                        throw new ConcurrencyException(exception, "Saga data {0} with ID {1} in table {2} could not be inserted!",
-                            sagaData.GetType(), sagaData.Id, _dataTableName);
+                        throw new ConcurrencyException(exception, $"Saga data {sagaData.GetType()} with ID {sagaData.Id} in table {_dataTableName} could not be inserted!");
                     }
                 }
 
@@ -281,7 +280,7 @@ UPDATE ""{_dataTableName}""
                     
                     if (rows == 0)
                     {
-                        throw new ConcurrencyException("Update of saga with ID {0} did not succeed because someone else beat us to it", sagaData.Id);
+                        throw new ConcurrencyException($"Update of saga with ID {sagaData.Id} did not succeed because someone else beat us to it");
                     }
                 }
 
@@ -321,7 +320,7 @@ DELETE
 
                     if (rows == 0)
                     {
-                        throw new ConcurrencyException("Delete of saga with ID {0} did not succeed because someone else beat us to it", sagaData.Id);
+                        throw new ConcurrencyException($"Delete of saga with ID {sagaData.Id} did not succeed because someone else beat us to it");
                     }
                 }
 
