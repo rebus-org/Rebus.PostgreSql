@@ -63,7 +63,7 @@ CREATE TABLE ""{_tableName
                     command.ExecuteNonQuery();
                 }
 
-                connection.Complete();
+                Task.Run(async () => await connection.Complete()).Wait();
             }
         }
 
@@ -116,7 +116,7 @@ CREATE TABLE ""{_tableName
                     // it's already there
                 }
 
-                connection.Complete();
+                await connection.Complete();
             }
         }
 
@@ -143,7 +143,7 @@ CREATE TABLE ""{_tableName
                     Console.WriteLine(exception);
                 }
 
-                connection.Complete();
+                await connection.Complete();
             }
         }
 

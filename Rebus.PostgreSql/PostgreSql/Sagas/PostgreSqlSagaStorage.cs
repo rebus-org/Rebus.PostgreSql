@@ -106,7 +106,7 @@ CREATE INDEX ON ""{_indexTableName}"" (""saga_id"");
                     command.ExecuteNonQuery();
                 }
 
-                connection.Complete();
+                Task.Run(async () => await connection.Complete()).Wait();
             }
         }
 
@@ -228,7 +228,7 @@ INSERT
                     await CreateIndex(sagaData, connection, propertiesToIndex);
                 }
 
-                connection.Complete();
+                await connection.Complete();
             }
         }
 
@@ -291,7 +291,7 @@ UPDATE ""{_dataTableName}""
                     await CreateIndex(sagaData, connection, propertiesToIndex);
                 }
 
-                connection.Complete();
+                await connection.Complete();
             }
         }
 
@@ -339,7 +339,7 @@ DELETE
                     await command.ExecuteNonQueryAsync();
                 }
 
-                connection.Complete();
+                await connection.Complete();
             }
         }
 

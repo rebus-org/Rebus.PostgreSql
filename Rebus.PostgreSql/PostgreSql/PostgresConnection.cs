@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Npgsql;
+// ReSharper disable EmptyGeneralCatchClause
+#pragma warning disable 1998
 
 namespace Rebus.PostgreSql
 {
@@ -12,7 +14,6 @@ namespace Rebus.PostgreSql
         readonly NpgsqlConnection _currentConnection;
         NpgsqlTransaction _currentTransaction;
 
-        bool _completed;
         bool _disposed;
 
         /// <summary>
@@ -49,8 +50,6 @@ namespace Rebus.PostgreSql
                 _currentTransaction = null;
             }
         }
-
-
 
         /// <summary>
         /// Rolls back the transaction if it hasn't been completed

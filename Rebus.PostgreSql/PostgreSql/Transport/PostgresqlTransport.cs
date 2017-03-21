@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -229,20 +228,21 @@ body
             }
         }
 
+        /// <summary>
+        /// Gets the address of the transport
+        /// </summary>
         public string Address => _inputQueueName;
 
-
         /// <summary>
-        /// 
+        /// Creates the necessary table
         /// </summary>
-        /// <exception cref="RebusApplicationException"></exception>
         public void EnsureTableIsCreated()
         {
             try
             {
                 CreateSchema();
             }
-            catch (SqlException exception)
+            catch (Exception exception)
             {
                 throw new RebusApplicationException(exception, $"Error attempting to initialize SQL transport schema with mesages table [dbo].[{_tableName}]");
             }

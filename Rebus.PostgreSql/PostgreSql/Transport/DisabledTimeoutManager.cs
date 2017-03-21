@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Rebus.Extensions;
 using Rebus.Messages;
 using Rebus.Timeouts;
+#pragma warning disable 1998
 
 namespace Rebus.PostgreSql.Transport
 {
