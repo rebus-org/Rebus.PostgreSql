@@ -21,7 +21,7 @@ using Rebus.Time;
 namespace Rebus.PostgreSql.Transport
 {
     /// <summary>
-    /// 
+    /// Implementation of <see cref="ITransport"/> that uses PostgreSQL to move messages around
     /// </summary>
     public class PostgreSqlTransport : ITransport, IInitializable, IDisposable
     {
