@@ -29,7 +29,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             var consoleLoggerFactory = new ConsoleLoggerFactory(false);
             var asyncTaskFactory = new TplAsyncTaskFactory(consoleLoggerFactory);
             var connectionHelper = new PostgresConnectionHelper(PostgreSqlTestHelper.ConnectionString);
-            _transport = new PostgreSqlTransport(connectionHelper, _tableName, QueueName, consoleLoggerFactory,asyncTaskFactory );
+            _transport = new PostgreSqlTransport(connectionHelper, _tableName, QueueName, consoleLoggerFactory, asyncTaskFactory);
             _transport.EnsureTableIsCreated();
 
             Using(_transport);
@@ -59,7 +59,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             }
         }
 
-       [Test]
+        [Test]
         public async Task DoesNotReceiveSentMessageWhenTransactionIsNotCommitted()
         {
             using (var scope = new RebusTransactionScope())
@@ -136,13 +136,10 @@ namespace Rebus.PostgreSql.Tests.Transport
             }
         }
 
-
-
-         void AssertMessageIsRecognized(TransportMessage transportMessage)
+        void AssertMessageIsRecognized(TransportMessage transportMessage)
         {
             Assert.That(transportMessage.Headers.GetValue("recognizzle"), Is.EqualTo("hej"));
         }
-
 
         static TransportMessage RecognizableMessage(int id = 0)
         {
