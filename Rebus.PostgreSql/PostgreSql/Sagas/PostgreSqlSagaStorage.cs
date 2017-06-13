@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+// ReSharper disable once RedundantUsingDirective (because .NET Core)
 using System.Reflection;
 using System.Threading.Tasks;
 using Npgsql;
@@ -144,13 +145,13 @@ SELECT s.""data""
                         command.Parameters.Add("value", NpgsqlDbType.Text).Value = (propertyValue ?? "").ToString();
                     }
 
-                    var data = (byte[]) command.ExecuteScalar();
+                    var data = (byte[])command.ExecuteScalar();
 
                     if (data == null) return null;
 
                     try
                     {
-                        var sagaData = (ISagaData) _objectSerializer.Deserialize(data);
+                        var sagaData = (ISagaData)_objectSerializer.Deserialize(data);
 
                         if (!sagaDataType.IsInstanceOfType(sagaData))
                         {
@@ -244,7 +245,7 @@ INSERT
                 var revisionToUpdate = sagaData.Revision;
 
                 sagaData.Revision++;
-                
+
                 var nextRevision = sagaData.Revision;
 
                 // first, delete existing index
@@ -275,9 +276,9 @@ UPDATE ""{_dataTableName}""
     WHERE ""id"" = @id AND ""revision"" = @current_revision;
 
 ";
-                    
+
                     var rows = await command.ExecuteNonQueryAsync();
-                    
+
                     if (rows == 0)
                     {
                         throw new ConcurrencyException($"Update of saga with ID {sagaData.Id} did not succeed because someone else beat us to it");
@@ -312,7 +313,7 @@ DELETE
     WHERE ""id"" = @id AND ""revision"" = @current_revision;
 
 ";
-                    
+
                     command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
                     command.Parameters.Add("current_revision", NpgsqlDbType.Integer).Value = sagaData.Revision;
 
@@ -335,12 +336,14 @@ DELETE
 
 ";
                     command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
-                    
+
                     await command.ExecuteNonQueryAsync();
                 }
 
                 await connection.Complete();
             }
+
+            sagaData.Revision++;
         }
 
         async Task CreateIndex(ISagaData sagaData, PostgresConnection connection, IEnumerable<KeyValuePair<string, string>> propertiesToIndex)
