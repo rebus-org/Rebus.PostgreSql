@@ -25,6 +25,11 @@
 
 * Update to Rebus 3
 
+## 3.1.0
+
+* Add ability to customize NpgsqlConnection before it is used (e.g. to provide a certificate validation callback) - thanks [enriquein]
+
 ---
 
+[enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
