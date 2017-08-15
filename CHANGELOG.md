@@ -25,11 +25,10 @@
 
 * Update to Rebus 3
 
-## 4.0.0-b05
+## 4.0.0
 
 * Update to Rebus 4
 * Add .NET Core support
-* Update deps to b12
 * Add ability to customize `NpgsqlConnection` before it is used (e.g. to provide a certificate validation callback) - thanks [enriquein]
 
 ---
