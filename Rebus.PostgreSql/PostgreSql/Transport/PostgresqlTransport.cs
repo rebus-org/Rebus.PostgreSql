@@ -15,6 +15,7 @@ using Rebus.Transport;
 using System.Linq;
 using Npgsql;
 using Rebus.Extensions;
+using Rebus.Internals;
 using Rebus.Serialization;
 using Rebus.Time;
 
@@ -33,7 +34,6 @@ namespace Rebus.PostgreSql.Transport
         readonly string _tableName;
         readonly string _inputQueueName;
         readonly AsyncBottleneck _receiveBottleneck = new AsyncBottleneck(20);
-        readonly AsyncBottleneck _sendBottleneck = new AsyncBottleneck(1);
         readonly IAsyncTask _expiredMessagesCleanupTask;
         readonly ILog _log;
 
@@ -61,14 +61,12 @@ namespace Rebus.PostgreSql.Transport
         /// <param name="asyncTaskFactory"></param>
         public PostgreSqlTransport(PostgresConnectionHelper connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory)
         {
-            if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
-            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));
 
             _log = rebusLoggerFactory.GetLogger<PostgreSqlTransport>();
-            _connectionHelper = connectionHelper;
-            _tableName = tableName;
+            _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
+            _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
             _inputQueueName = inputQueueName;
             _expiredMessagesCleanupTask = asyncTaskFactory.Create("ExpiredMessagesCleanup", PerformExpiredMessagesCleanupCycle, intervalSeconds: 60);
 
@@ -82,10 +80,10 @@ namespace Rebus.PostgreSql.Transport
             _expiredMessagesCleanupTask.Start();
         }
 
-         /// <summary>
-         /// 
-         /// </summary>
-         public TimeSpan ExpiredMessagesCleanupInterval { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public TimeSpan ExpiredMessagesCleanupInterval { get; set; }
 
         /// <summary>The SQL transport doesn't really have queues, so this function does nothing</summary>
         public void CreateQueue(string address)
@@ -95,13 +93,27 @@ namespace Rebus.PostgreSql.Transport
         /// <inheritdoc />
         public async Task Send(string destinationAddress, TransportMessage message, ITransactionContext context)
         {
-            using (await _sendBottleneck.Enter(CancellationToken.None))
-            {
-                var connection = await GetConnection(context);
+            var connection = await GetConnection(context);
+            var semaphore = connection.Semaphore;
 
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = $@"
+            // serialize access to the connection
+            await semaphore.WaitAsync();
+
+            try
+            {
+                await InnerSend(destinationAddress, message, connection);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        async Task InnerSend(string destinationAddress, TransportMessage message, ConnectionWrapper connection)
+        {
+            using (var command = connection.Connection.CreateCommand())
+            {
+                command.CommandText = $@"
 INSERT INTO {_tableName}
 (
     recipient,
@@ -121,24 +133,23 @@ VALUES
     clock_timestamp() + @ttlseconds
 )";
 
-                    var headers = message.Headers.Clone();
+                var headers = message.Headers.Clone();
 
-                    var priority = GetMessagePriority(headers);
-                    var initialVisibilityDelay = new TimeSpan(0, 0, 0, GetInitialVisibilityDelay(headers));
-                    var ttlSeconds = new TimeSpan(0, 0, 0, GetTtlSeconds(headers));
+                var priority = GetMessagePriority(headers);
+                var initialVisibilityDelay = new TimeSpan(0, 0, 0, GetInitialVisibilityDelay(headers));
+                var ttlSeconds = new TimeSpan(0, 0, 0, GetTtlSeconds(headers));
 
-                    // must be last because the other functions on the headers might change them
-                    var serializedHeaders = HeaderSerializer.Serialize(headers);
+                // must be last because the other functions on the headers might change them
+                var serializedHeaders = HeaderSerializer.Serialize(headers);
 
-                    command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = destinationAddress;
-                    command.Parameters.Add("headers", NpgsqlDbType.Bytea).Value = serializedHeaders;
-                    command.Parameters.Add("body", NpgsqlDbType.Bytea).Value = message.Body;
-                    command.Parameters.Add("priority", NpgsqlDbType.Integer).Value = priority;
-                    command.Parameters.Add("visible", NpgsqlDbType.Interval).Value = initialVisibilityDelay;
-                    command.Parameters.Add("ttlseconds", NpgsqlDbType.Interval).Value = ttlSeconds;
+                command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = destinationAddress;
+                command.Parameters.Add("headers", NpgsqlDbType.Bytea).Value = serializedHeaders;
+                command.Parameters.Add("body", NpgsqlDbType.Bytea).Value = message.Body;
+                command.Parameters.Add("priority", NpgsqlDbType.Integer).Value = priority;
+                command.Parameters.Add("visible", NpgsqlDbType.Interval).Value = initialVisibilityDelay;
+                command.Parameters.Add("ttlseconds", NpgsqlDbType.Interval).Value = ttlSeconds;
 
-                    await command.ExecuteNonQueryAsync();
-                }
+                await command.ExecuteNonQueryAsync();
             }
         }
 
@@ -151,7 +162,7 @@ VALUES
 
                 TransportMessage receivedTransportMessage;
 
-                using (var selectCommand = connection.CreateCommand())
+                using (var selectCommand = connection.Connection.CreateCommand())
                 {
                     selectCommand.CommandText = $@"
 DELETE from {_tableName} 
@@ -215,7 +226,7 @@ body
 				where recipient = @recipient 
 				and expiration < clock_timestamp()
 ";
-                        command.Parameters.Add("recipient",  NpgsqlDbType.Text).Value = _inputQueueName;
+                        command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = _inputQueueName;
                         affectedRows = await command.ExecuteNonQueryAsync();
                     }
 
@@ -289,9 +300,8 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
 );
 ");
 
-                Task.Run(async () => await connection.Complete()).Wait();
+                AsyncHelpers.RunSync(() => connection.Complete());
             }
-
         }
 
         static void ExecuteCommands(PostgresConnection connection, string sqlCommands)
@@ -321,19 +331,35 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
             }
         }
 
-        Task<PostgresConnection> GetConnection(ITransactionContext context)
+        class ConnectionWrapper : IDisposable
+        {
+            public ConnectionWrapper(PostgresConnection connection)
+            {
+                Connection = connection;
+                Semaphore = new SemaphoreSlim(1, 1);
+            }
+
+            public PostgresConnection Connection { get; }
+            public SemaphoreSlim Semaphore { get; }
+
+            public void Dispose()
+            {
+                Connection?.Dispose();
+                Semaphore?.Dispose();
+            }
+        }
+
+        Task<ConnectionWrapper> GetConnection(ITransactionContext context)
         {
             return context
                 .GetOrAdd(CurrentConnectionKey,
                     async () =>
                     {
                         var dbConnection = await _connectionHelper.GetConnection();
+                        var connectionWrapper = new ConnectionWrapper(dbConnection);
                         context.OnCommitted(async () => await dbConnection.Complete());
-                        context.OnDisposed(() =>
-                        {
-                            dbConnection.Dispose();
-                        });
-                        return dbConnection;
+                        context.OnDisposed(() => connectionWrapper.Dispose());
+                        return connectionWrapper;
                     });
         }
 
@@ -370,9 +396,7 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
 
         static int GetInitialVisibilityDelay(IDictionary<string, string> headers)
         {
-            string deferredUntilDateTimeOffsetString;
-
-            if (!headers.TryGetValue(Headers.DeferredUntil, out deferredUntilDateTimeOffsetString))
+            if (!headers.TryGetValue(Headers.DeferredUntil, out var deferredUntilDateTimeOffsetString))
             {
                 return 0;
             }

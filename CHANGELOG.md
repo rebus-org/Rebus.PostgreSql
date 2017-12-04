@@ -31,7 +31,12 @@
 * Add .NET Core support
 * Add ability to customize `NpgsqlConnection` before it is used (e.g. to provide a certificate validation callback) - thanks [enriquein]
 
+## 4.1.0
+
+* Add async bottleneck for outgoing messages to avoid concurrency issues accessing a shared connection - thanks [dtabuenc]
+
 ---
 
+[dtabuenc]: https://github.com/dtabuenc
 [enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
