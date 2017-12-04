@@ -32,7 +32,8 @@ namespace Rebus.PostgreSql.Transport
         readonly PostgresConnectionHelper _connectionHelper;
         readonly string _tableName;
         readonly string _inputQueueName;
-        readonly AsyncBottleneck _bottleneck = new AsyncBottleneck(20);
+        readonly AsyncBottleneck _receiveBottleneck = new AsyncBottleneck(20);
+        readonly AsyncBottleneck _sendBottleneck = new AsyncBottleneck(1);
         readonly IAsyncTask _expiredMessagesCleanupTask;
         readonly ILog _log;
 
@@ -94,7 +95,9 @@ namespace Rebus.PostgreSql.Transport
         /// <inheritdoc />
         public async Task Send(string destinationAddress, TransportMessage message, ITransactionContext context)
         {
-            var connection = await GetConnection(context);
+            using (await _sendBottleneck.Enter(CancellationToken.None))
+            {
+                var connection = await GetConnection(context);
 
                 using (var command = connection.CreateCommand())
                 {
@@ -136,12 +139,13 @@ VALUES
 
                     await command.ExecuteNonQueryAsync();
                 }
+            }
         }
 
         /// <inheritdoc />
         public async Task<TransportMessage> Receive(ITransactionContext context, CancellationToken cancellationToken)
         {
-            using (await _bottleneck.Enter(cancellationToken))
+            using (await _receiveBottleneck.Enter(cancellationToken))
             {
                 var connection = await GetConnection(context);
 
