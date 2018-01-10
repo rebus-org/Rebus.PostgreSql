@@ -16,7 +16,7 @@ namespace Rebus.PostgreSql.Subscriptions
     {
         const string UniqueKeyViolation = "23505";
 
-        readonly PostgresConnectionHelper _connectionHelper;
+        readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
         readonly ILog _log;
 
@@ -25,7 +25,7 @@ namespace Rebus.PostgreSql.Subscriptions
         /// If <paramref name="isCentralized"/> is true, subscribing/unsubscribing will be short-circuited by manipulating
         /// subscriptions directly, instead of requesting via messages
         /// </summary>
-        public PostgreSqlSubscriptionStorage(PostgresConnectionHelper connectionHelper, string tableName, bool isCentralized, IRebusLoggerFactory rebusLoggerFactory)
+        public PostgreSqlSubscriptionStorage(IPostgresConnectionProvider connectionHelper, string tableName, bool isCentralized, IRebusLoggerFactory rebusLoggerFactory)
         {
             if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
             if (tableName == null) throw new ArgumentNullException(nameof(tableName));

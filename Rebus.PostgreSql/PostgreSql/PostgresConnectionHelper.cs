@@ -8,7 +8,7 @@ namespace Rebus.PostgreSql
     /// <summary>
     /// Helps with managing <see cref="NpgsqlConnection"/>s
     /// </summary>
-    public class PostgresConnectionHelper
+    public class PostgresConnectionHelper : IPostgresConnectionProvider
     {
         readonly string _connectionString;
         private readonly Action<NpgsqlConnection> _additionalConnectionSetupCallback;

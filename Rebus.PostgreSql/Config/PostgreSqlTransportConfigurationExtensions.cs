@@ -36,7 +36,7 @@ namespace Rebus.PostgreSql.Transport
             OneWayClientBackdoor.ConfigureOneWayClient(configurer);
         }
 
-        static void Configure(StandardConfigurer<ITransport> configurer, Func<IRebusLoggerFactory, PostgresConnectionHelper> connectionProviderFactory, string tableName, string inputQueueName)
+        static void Configure(StandardConfigurer<ITransport> configurer, Func<IRebusLoggerFactory, IPostgresConnectionProvider> connectionProviderFactory, string tableName, string inputQueueName)
         {
             configurer.Register(context =>
             {
