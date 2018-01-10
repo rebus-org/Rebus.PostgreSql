@@ -24,9 +24,19 @@ namespace Rebus.Config
             string connectionString, string tableName, bool automaticallyCreateTables = true, 
             Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
+            var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+            StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
+        }
+
+        /// <summary>
+        /// Configures Rebus to use PostgreSQL to store saga data snapshots, using the specified table to store the data
+        /// </summary>
+        public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer,
+            IPostgresConnectionProvider connectionProvider , string tableName, bool automaticallyCreateTables = true)
+        {
             configurer.Register(c =>
             {
-                var sagaStorage = new PostgreSqlSagaSnapshotStorage(new PostgresConnectionHelper(connectionString, additionalConnectionSetup), tableName);
+                var sagaStorage = new PostgreSqlSagaSnapshotStorage(connectionProvider, tableName);
 
                 if (automaticallyCreateTables)
                 {
@@ -44,10 +54,21 @@ namespace Rebus.Config
             string connectionString, string dataTableName, string indexTableName,
             bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
+            var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+            StoreInPostgres(configurer, provider, dataTableName, indexTableName, automaticallyCreateTables);
+        }
+
+        /// <summary>
+        /// Configures Rebus to use PostgreSQL to store sagas, using the tables specified to store data and indexed properties respectively.
+        /// </summary>
+        public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer,
+            IPostgresConnectionProvider connectionProvider, string dataTableName, string indexTableName,
+            bool automaticallyCreateTables = true)
+        {
             configurer.Register(c =>
             {
                 var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-                var sagaStorage = new PostgreSqlSagaStorage(new PostgresConnectionHelper(connectionString, additionalConnectionSetup), dataTableName, indexTableName, rebusLoggerFactory);
+                var sagaStorage = new PostgreSqlSagaStorage(connectionProvider, dataTableName, indexTableName, rebusLoggerFactory);
 
                 if (automaticallyCreateTables)
                 {
@@ -61,13 +82,24 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store timeouts.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, string connectionString, string tableName, 
+        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, string connectionString,
+            string tableName,
             bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
+        {
+            var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+            StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
+        }
+
+        /// <summary>
+        /// Configures Rebus to use PostgreSQL to store timeouts.
+        /// </summary>
+        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, IPostgresConnectionProvider connectionProvider, string tableName, 
+            bool automaticallyCreateTables = true)
         {
             configurer.Register(c =>
             {
                 var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-                var subscriptionStorage = new PostgreSqlTimeoutManager(new PostgresConnectionHelper(connectionString, additionalConnectionSetup), tableName, rebusLoggerFactory);
+                var subscriptionStorage = new PostgreSqlTimeoutManager(connectionProvider, tableName, rebusLoggerFactory);
 
                 if (automaticallyCreateTables)
                 {
@@ -86,12 +118,23 @@ namespace Rebus.Config
         public static void StoreInPostgres(this StandardConfigurer<ISubscriptionStorage> configurer,
             string connectionString, string tableName, bool isCentralized = false, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
+            var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+            StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
+        }
+
+        /// <summary>
+        /// Configures Rebus to use PostgreSQL to store subscriptions. Use <paramref name="isCentralized"/> = true to indicate whether it's OK to short-circuit
+        /// subscribing and unsubscribing by manipulating the subscription directly from the subscriber or just let it default to false to preserve the
+        /// default behavior.
+        /// </summary>
+        public static void StoreInPostgres(this StandardConfigurer<ISubscriptionStorage> configurer,
+            IPostgresConnectionProvider connectionProvider, string tableName, bool isCentralized = false, bool automaticallyCreateTables = true)
+        {
             configurer.Register(c =>
             {
                 var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-                var connectionHelper = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
                 var subscriptionStorage = new PostgreSqlSubscriptionStorage(
-                    connectionHelper, tableName, isCentralized, rebusLoggerFactory);
+                    connectionProvider, tableName, isCentralized, rebusLoggerFactory);
 
                 if (automaticallyCreateTables)
                 {

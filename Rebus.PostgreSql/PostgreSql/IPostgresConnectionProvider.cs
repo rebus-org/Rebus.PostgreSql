@@ -1,6 +1,5 @@
 using System.Data.SqlClient;
 using System.Threading.Tasks;
-using Npgsql;
 
 namespace Rebus.PostgreSql
 {
