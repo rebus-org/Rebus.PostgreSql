@@ -16,13 +16,13 @@ namespace Rebus.PostgreSql.Sagas
     {
         readonly ObjectSerializer _objectSerializer = new ObjectSerializer();
         readonly DictionarySerializer _dictionarySerializer = new DictionarySerializer();
-        readonly PostgresConnectionHelper _connectionHelper;
+        readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
 
         /// <summary>
         /// Constructs the storage
         /// </summary>
-        public PostgreSqlSagaSnapshotStorage(PostgresConnectionHelper connectionHelper, string tableName)
+        public PostgreSqlSagaSnapshotStorage(IPostgresConnectionProvider connectionHelper, string tableName)
         {
             if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
             if (tableName == null) throw new ArgumentNullException(nameof(tableName));

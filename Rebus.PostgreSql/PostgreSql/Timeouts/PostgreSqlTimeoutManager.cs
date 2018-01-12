@@ -19,14 +19,14 @@ namespace Rebus.PostgreSql.Timeouts
     public class PostgreSqlTimeoutManager : ITimeoutManager
     {
         readonly DictionarySerializer _dictionarySerializer = new DictionarySerializer();
-        readonly PostgresConnectionHelper _connectionHelper;
+        readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
         readonly ILog _log;
 
         /// <summary>
         /// Constructs the timeout manager
         /// </summary>
-        public PostgreSqlTimeoutManager(PostgresConnectionHelper connectionHelper, string tableName, IRebusLoggerFactory rebusLoggerFactory)
+        public PostgreSqlTimeoutManager(IPostgresConnectionProvider connectionHelper, string tableName, IRebusLoggerFactory rebusLoggerFactory)
         {
             if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
             if (tableName == null) throw new ArgumentNullException(nameof(tableName));

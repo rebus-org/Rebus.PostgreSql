@@ -30,7 +30,7 @@ namespace Rebus.PostgreSql.Transport
 
         static readonly HeaderSerializer HeaderSerializer = new HeaderSerializer();
 
-        readonly PostgresConnectionHelper _connectionHelper;
+        readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
         readonly string _inputQueueName;
         readonly AsyncBottleneck _receiveBottleneck = new AsyncBottleneck(20);
@@ -59,7 +59,7 @@ namespace Rebus.PostgreSql.Transport
         /// <param name="inputQueueName"></param>
         /// <param name="rebusLoggerFactory"></param>
         /// <param name="asyncTaskFactory"></param>
-        public PostgreSqlTransport(PostgresConnectionHelper connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory)
+        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory)
         {
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));

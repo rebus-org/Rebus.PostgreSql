@@ -23,7 +23,7 @@ namespace Rebus.PostgreSql.Sagas
         static readonly string IdPropertyName = Reflect.Path<ISagaData>(d => d.Id);
 
         readonly ObjectSerializer _objectSerializer = new ObjectSerializer();
-        readonly PostgresConnectionHelper _connectionHelper;
+        readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _dataTableName;
         readonly string _indexTableName;
         readonly ILog _log;
@@ -31,7 +31,7 @@ namespace Rebus.PostgreSql.Sagas
         /// <summary>
         /// Constructs the saga storage
         /// </summary>
-        public PostgreSqlSagaStorage(PostgresConnectionHelper connectionHelper, string dataTableName, string indexTableName, IRebusLoggerFactory rebusLoggerFactory)
+        public PostgreSqlSagaStorage(IPostgresConnectionProvider connectionHelper, string dataTableName, string indexTableName, IRebusLoggerFactory rebusLoggerFactory)
         {
             if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
             if (dataTableName == null) throw new ArgumentNullException(nameof(dataTableName));
