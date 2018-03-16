@@ -1,5 +1,5 @@
 ﻿using Rebus.Auditing.Sagas;
-﻿using System;
+using System;
 using Npgsql;
 using Rebus.Logging;
 using Rebus.PostgreSql;
@@ -20,19 +20,17 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store saga data snapshots, using the specified table to store the data
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer,
-            string connectionString, string tableName, bool automaticallyCreateTables = true, 
-            Action<NpgsqlConnection> additionalConnectionSetup = null)
+        public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer, string connectionString, string tableName, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+            
             StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
         }
 
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store saga data snapshots, using the specified table to store the data
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer,
-            IPostgresConnectionProvider connectionProvider , string tableName, bool automaticallyCreateTables = true)
+        public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer, IPostgresConnectionProvider connectionProvider, string tableName, bool automaticallyCreateTables = true)
         {
             configurer.Register(c =>
             {
@@ -50,20 +48,17 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store sagas, using the tables specified to store data and indexed properties respectively.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer,
-            string connectionString, string dataTableName, string indexTableName,
-            bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
+        public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer, string connectionString, string dataTableName, string indexTableName, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+            
             StoreInPostgres(configurer, provider, dataTableName, indexTableName, automaticallyCreateTables);
         }
 
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store sagas, using the tables specified to store data and indexed properties respectively.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer,
-            IPostgresConnectionProvider connectionProvider, string dataTableName, string indexTableName,
-            bool automaticallyCreateTables = true)
+        public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer, IPostgresConnectionProvider connectionProvider, string dataTableName, string indexTableName, bool automaticallyCreateTables = true)
         {
             configurer.Register(c =>
             {
@@ -82,19 +77,17 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store timeouts.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, string connectionString,
-            string tableName,
-            bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
+        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, string connectionString, string tableName, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+
             StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
         }
 
         /// <summary>
         /// Configures Rebus to use PostgreSQL to store timeouts.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, IPostgresConnectionProvider connectionProvider, string tableName, 
-            bool automaticallyCreateTables = true)
+        public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, IPostgresConnectionProvider connectionProvider, string tableName, bool automaticallyCreateTables = true)
         {
             configurer.Register(c =>
             {
@@ -115,10 +108,10 @@ namespace Rebus.Config
         /// subscribing and unsubscribing by manipulating the subscription directly from the subscriber or just let it default to false to preserve the
         /// default behavior.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ISubscriptionStorage> configurer,
-            string connectionString, string tableName, bool isCentralized = false, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
+        public static void StoreInPostgres(this StandardConfigurer<ISubscriptionStorage> configurer, string connectionString, string tableName, bool isCentralized = false, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
+
             StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
         }
 
@@ -127,14 +120,12 @@ namespace Rebus.Config
         /// subscribing and unsubscribing by manipulating the subscription directly from the subscriber or just let it default to false to preserve the
         /// default behavior.
         /// </summary>
-        public static void StoreInPostgres(this StandardConfigurer<ISubscriptionStorage> configurer,
-            IPostgresConnectionProvider connectionProvider, string tableName, bool isCentralized = false, bool automaticallyCreateTables = true)
+        public static void StoreInPostgres(this StandardConfigurer<ISubscriptionStorage> configurer, IPostgresConnectionProvider connectionProvider, string tableName, bool isCentralized = false, bool automaticallyCreateTables = true)
         {
             configurer.Register(c =>
             {
                 var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-                var subscriptionStorage = new PostgreSqlSubscriptionStorage(
-                    connectionProvider, tableName, isCentralized, rebusLoggerFactory);
+                var subscriptionStorage = new PostgreSqlSubscriptionStorage(connectionProvider, tableName, isCentralized, rebusLoggerFactory);
 
                 if (automaticallyCreateTables)
                 {

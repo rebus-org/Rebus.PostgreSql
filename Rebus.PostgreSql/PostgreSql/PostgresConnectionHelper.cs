@@ -11,7 +11,7 @@ namespace Rebus.PostgreSql
     public class PostgresConnectionHelper : IPostgresConnectionProvider
     {
         readonly string _connectionString;
-        private readonly Action<NpgsqlConnection> _additionalConnectionSetupCallback;
+        readonly Action<NpgsqlConnection> _additionalConnectionSetupCallback;
 
         /// <summary>
         /// Constructs this thingie

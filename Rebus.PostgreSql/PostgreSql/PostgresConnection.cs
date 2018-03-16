@@ -21,10 +21,8 @@ namespace Rebus.PostgreSql
         /// </summary>
         public PostgresConnection(NpgsqlConnection currentConnection, NpgsqlTransaction currentTransaction)
         {
-            if (currentConnection == null) throw new ArgumentNullException(nameof(currentConnection));
-            if (currentTransaction == null) throw new ArgumentNullException(nameof(currentTransaction));
-            _currentConnection = currentConnection;
-            _currentTransaction = currentTransaction;
+            _currentConnection = currentConnection ?? throw new ArgumentNullException(nameof(currentConnection));
+            _currentTransaction = currentTransaction ?? throw new ArgumentNullException(nameof(currentTransaction));
         }
 
         /// <summary>
