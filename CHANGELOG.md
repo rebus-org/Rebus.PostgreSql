@@ -35,6 +35,10 @@
 
 * Add async bottleneck for outgoing messages to avoid concurrency issues accessing a shared connection - thanks [dtabuenc]
 
+## 5.0.0
+
+* Make connection provider configurable - thanks [dtabuenc]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
