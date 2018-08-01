@@ -17,7 +17,8 @@ namespace Rebus.PostgreSql.Tests.Transport
     public class TestPostgreSqlTransportMessageOrdering : FixtureBase
     {
         const string QueueName = "test-ordering";
-        protected override void SetUp() => PostgreSqlTestHelper.DropTable(QueueName);
+        const string TableName = "Messages";
+        protected override void SetUp() => PostgreSqlTestHelper.DropTable(TableName);
 
         [Test]
         public async Task DeliversMessagesByVisibleTimeAndNotBeInsertionTime()
@@ -89,7 +90,7 @@ namespace Rebus.PostgreSql.Tests.Transport
 
             var transport = new PostgreSqlTransport(
                     connectionProvider,
-                    "Messages",
+                    TableName,
                     QueueName,
                     loggerFactory,
                     asyncTaskFactory
