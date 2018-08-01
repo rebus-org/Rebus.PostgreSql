@@ -39,6 +39,10 @@
 
 * Make connection provider configurable - thanks [dtabuenc]
 
+## 6.0.0-b01
+
+* Change ordering such that priority is reversed (i.e. higher priorities are preferred) and such that visible time takes precedence over insertion order, meaning that deferred messages are ordered more naturally
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
