@@ -172,7 +172,7 @@ where id =
     where recipient = @recipient
     and visible < clock_timestamp()
     and expiration > clock_timestamp() 
-    order by priority asc, id asc
+    order by priority desc, visible asc, id asc
     for update skip locked
     limit 1
 )
