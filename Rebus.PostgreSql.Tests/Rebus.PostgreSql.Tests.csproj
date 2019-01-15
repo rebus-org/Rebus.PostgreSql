@@ -5,7 +5,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rebus.PostgreSql.Tests</RootNamespace>
     <AssemblyName>Rebus.PostgreSql.Tests</AssemblyName>
-    <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp2.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -26,17 +26,13 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <DefineConstants>NET45</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <DefineConstants>NETSTANDARD1_6</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rebus.PostgreSql\Rebus.PostgreSql.csproj" />
+    <PackageReference Include="microsoft.net.test.sdk" Version="15.9.0" />
     <PackageReference Include="npgsql" Version="3.2.2" />
     <PackageReference Include="nunit" Version="3.7.1" />
-    <PackageReference Include="rebus" Version="4.0.0" />
+    <PackageReference Include="nunit3testadapter" Version="3.12.0" />
+    <PackageReference Include="rebus" Version="5.2.1" />
     <PackageReference Include="rebus.tests.contracts" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>

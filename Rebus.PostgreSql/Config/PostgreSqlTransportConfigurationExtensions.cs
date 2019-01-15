@@ -21,7 +21,7 @@ namespace Rebus.PostgreSql.Transport
         /// </summary>
         public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionStringOrConnectionOrConnectionStringName, string tableName, string inputQueueName)
         {
-            UsePostgreSql(configurer,  new PostgresConnectionHelper(connectionStringOrConnectionOrConnectionStringName), tableName, inputQueueName);
+            UsePostgreSql(configurer, new PostgresConnectionHelper(connectionStringOrConnectionOrConnectionStringName), tableName, inputQueueName);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rebus.PostgreSql.Transport
         /// The table specified by <paramref name="tableName"/> will be used to store messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider  connectionProvider, string tableName)
+        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName)
         {
             Configure(configurer, connectionProvider, tableName, null);
             OneWayClientBackdoor.ConfigureOneWayClient(configurer);
