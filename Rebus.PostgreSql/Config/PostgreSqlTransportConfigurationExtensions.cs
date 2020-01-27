@@ -1,13 +1,13 @@
-﻿using System;
-using Rebus.Config;
-using Rebus.Logging;
+﻿using Rebus.Logging;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
+using Rebus.PostgreSql;
+using Rebus.PostgreSql.Transport;
 using Rebus.Threading;
 using Rebus.Timeouts;
 using Rebus.Transport;
 
-namespace Rebus.PostgreSql.Transport
+namespace Rebus.Config
 {
     /// <summary>
     /// Configuration extensions for the SQL transport
@@ -19,9 +19,9 @@ namespace Rebus.PostgreSql.Transport
         /// store messages, and the "queue" specified by <paramref name="inputQueueName"/> will be used when querying for messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionStringOrConnectionOrConnectionStringName, string tableName, string inputQueueName)
+        public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, string inputQueueName)
         {
-            UsePostgreSql(configurer, new PostgresConnectionHelper(connectionStringOrConnectionOrConnectionStringName), tableName, inputQueueName);
+            UsePostgreSql(configurer, new PostgresConnectionHelper(connectionString), tableName, inputQueueName);
         }
 
         /// <summary>
@@ -39,9 +39,9 @@ namespace Rebus.PostgreSql.Transport
         /// The table specified by <paramref name="tableName"/> will be used to store messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionStringOrConnectionStringName, string tableName)
+        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName)
         {
-            UsePostgreSqlAsOneWayClient(configurer, new PostgresConnectionHelper(connectionStringOrConnectionStringName), tableName);
+            UsePostgreSqlAsOneWayClient(configurer, new PostgresConnectionHelper(connectionString), tableName);
         }
 
         /// <summary>
