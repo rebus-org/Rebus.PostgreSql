@@ -1,16 +1,18 @@
 image: Visual Studio 2019
 
+shallow_clone: true
+
 cache:
   - packages -> **\packages.config
   - '%LocalAppData%\NuGet\Cache'
 
 services:
-  - postgresql95
+  - postgresql96
 
 before_build:
   - SET PGUSER=postgres
   - SET PGPASSWORD=Password12!
-  - PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
+  - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
   - createdb rebus2_test
   - appveyor-retry dotnet restore -v Minimal
 
