@@ -5,7 +5,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rebus.PostgreSql.Tests</RootNamespace>
     <AssemblyName>Rebus.PostgreSql.Tests</AssemblyName>
-    <TargetFrameworks>net45;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net451;netcoreapp2.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -34,8 +34,5 @@
     <PackageReference Include="nunit3testadapter" Version="3.12.0" />
     <PackageReference Include="rebus" Version="4.0.0" />
     <PackageReference Include="rebus.tests.contracts" Version="4.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

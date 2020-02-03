@@ -39,10 +39,11 @@
 
 * Make connection provider configurable - thanks [dtabuenc]
 
-## 6.0.0-b02
+## 6.0.0-b03
 
 * Change ordering such that priority is reversed (i.e. higher priorities are preferred) and such that visible time takes precedence over insertion order, meaning that deferred messages are ordered more naturally
 * Rename misleading parameter
+* Update System.Data.SqlClient dependency to 4.8.0 to get the latest security fixes
 
 ---
 
