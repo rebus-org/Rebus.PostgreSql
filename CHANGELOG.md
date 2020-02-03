@@ -39,6 +39,10 @@
 
 * Make connection provider configurable - thanks [dtabuenc]
 
+## 5.1.0
+
+* Update System.Data.SqlClient dependency to 4.8.0 to get the latest security fixes
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
