@@ -40,9 +40,8 @@ namespace Rebus.PostgreSql
         public async Task<PostgresConnection> GetConnection()
         {
             var connection = new NpgsqlConnection(_connectionString);
-            
-            if (_additionalConnectionSetupCallback != null)
-                _additionalConnectionSetupCallback.Invoke(connection);
+
+            _additionalConnectionSetupCallback?.Invoke(connection);
 
             await connection.OpenAsync();
 

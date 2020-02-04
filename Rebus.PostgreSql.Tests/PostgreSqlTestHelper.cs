@@ -6,8 +6,9 @@ namespace Rebus.PostgreSql.Tests
 {
     public class PostgreSqlTestHelper
     {
-        const string TableDoesNotExist = "42P01";
         static readonly IPostgresConnectionProvider PostgresConnectionHelper = new PostgresConnectionHelper(ConnectionString);
+        
+        const string TableDoesNotExist = "42P01";
 
         public static string DatabaseName => $"rebus2_test_{TestConfig.Suffix}".TrimEnd('_');
 
@@ -17,24 +18,31 @@ namespace Rebus.PostgreSql.Tests
 
         public static void DropTable(string tableName)
         {
-            using (var connection = PostgresConnectionHelper.GetConnection().Result)
+            try
             {
-                using (var comand = connection.CreateCommand())
+                using (var connection = PostgresConnectionHelper.GetConnection().Result)
                 {
-                    comand.CommandText = $@"drop table ""{tableName}"";";
-
-                    try
+                    using (var comand = connection.CreateCommand())
                     {
-                        comand.ExecuteNonQuery();
+                        comand.CommandText = $@"drop table ""{tableName}"";";
 
-                        Console.WriteLine("Dropped postgres table '{0}'", tableName);
+                        try
+                        {
+                            comand.ExecuteNonQuery();
+
+                            Console.WriteLine("Dropped postgres table '{0}'", tableName);
+                        }
+                        catch (PostgresException exception) when (exception.SqlState == TableDoesNotExist)
+                        {
+                        }
                     }
-                    catch (PostgresException exception) when (exception.SqlState == TableDoesNotExist)
-                    {
-                    }
+
+                    connection.Complete().Wait();
                 }
-
-                connection.Complete().Wait();
+            }
+            catch (Exception exception)
+            {
+                throw new ApplicationException($"Could not drop table '{tableName}'", exception);
             }
         }
 

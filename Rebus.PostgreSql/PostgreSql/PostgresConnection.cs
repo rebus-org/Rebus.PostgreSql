@@ -42,6 +42,7 @@ namespace Rebus.PostgreSql
         public async Task Complete()
         {
             if (_currentTransaction == null) return;
+            
             using (_currentTransaction)
             {
                 _currentTransaction.Commit();
