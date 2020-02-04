@@ -43,7 +43,8 @@ namespace Rebus.PostgreSql
 
             _additionalConnectionSetupCallback?.Invoke(connection);
 
-            await connection.OpenAsync();
+            connection.Open();
+            //await connection.OpenAsync();
 
             var currentTransaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
