@@ -7,12 +7,12 @@ cache:
   - '%LocalAppData%\NuGet\Cache'
 
 services:
-  - postgresql96
+  - postgresql101
 
 before_build:
   - SET PGUSER=postgres
   - SET PGPASSWORD=Password12!
-  - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
+  - PATH=C:\Program Files\PostgreSQL\10.1\bin\;%PATH%
   - createdb rebus2_test
   - appveyor-retry dotnet restore -v Minimal
 
