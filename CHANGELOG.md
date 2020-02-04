@@ -39,9 +39,9 @@
 
 * Make connection provider configurable - thanks [dtabuenc]
 
-## 5.1.0
+## 5.1.1
 
-* Update System.Data.SqlClient dependency to 4.8.0 to get the latest security fixes
+* Update Npgsql dependency to 4.1.3 to get the latest security fixes (and update targets to .NET 4.6.1/.NET Standard 2.0 because required to do so)
 
 ---
 

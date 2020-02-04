@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -196,7 +195,11 @@ body
                             receivedTransportMessage = new TransportMessage(headersDictionary, body);
                         }
                     }
-                    catch (SqlException sqlException) when (sqlException.Number == OperationCancelledNumber)
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    catch (NpgsqlException sqlException) when (cancellationToken.IsCancellationRequested)
                     {
                         // ADO.NET does not throw the right exception when the task gets cancelled - therefore we need to do this:
                         throw new TaskCanceledException("Receive operation was cancelled", sqlException);
