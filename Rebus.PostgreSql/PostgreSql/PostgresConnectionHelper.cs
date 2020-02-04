@@ -2,6 +2,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using Npgsql;
+#pragma warning disable 1998
 
 namespace Rebus.PostgreSql
 {
