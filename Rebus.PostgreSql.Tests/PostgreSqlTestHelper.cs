@@ -7,7 +7,7 @@ namespace Rebus.PostgreSql.Tests
     public class PostgreSqlTestHelper
     {
         const string TableDoesNotExist = "42P01";
-        static readonly  IPostgresConnectionProvider PostgresConnectionHelper = new PostgresConnectionHelper(ConnectionString);
+        static readonly IPostgresConnectionProvider PostgresConnectionHelper = new PostgresConnectionHelper(ConnectionString);
 
         public static string DatabaseName => $"rebus2_test_{TestConfig.Suffix}".TrimEnd('_');
 
@@ -34,7 +34,7 @@ namespace Rebus.PostgreSql.Tests
                     }
                 }
 
-                connection.Complete();
+                connection.Complete().Wait();
             }
         }
 
