@@ -2,7 +2,6 @@
 using System.Data;
 using System.Threading.Tasks;
 using Npgsql;
-#pragma warning disable 1998
 
 namespace Rebus.PostgreSql
 {
@@ -44,8 +43,7 @@ namespace Rebus.PostgreSql
 
             _additionalConnectionSetupCallback?.Invoke(connection);
 
-            connection.Open();
-            //await connection.OpenAsync();
+            await connection.OpenAsync();
 
             var currentTransaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
