@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{1ABDD7C1-1F8D-402D-8692-3E4B66962DE0}"
 	ProjectSection(SolutionItems) = preProject
@@ -10,9 +10,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{1ABDD7C1
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rebus.PostgreSql", "Rebus.PostgreSql\Rebus.PostgreSql.csproj", "{DC73C2BE-BC8C-4700-8804-70C70D3384F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rebus.PostgreSql", "Rebus.PostgreSql\Rebus.PostgreSql.csproj", "{DC73C2BE-BC8C-4700-8804-70C70D3384F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rebus.PostgreSql.Tests", "Rebus.PostgreSql.Tests\Rebus.PostgreSql.Tests.csproj", "{7ECBEE2F-C448-40B0-8C5F-6F157AB4E79F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rebus.PostgreSql.Tests", "Rebus.PostgreSql.Tests\Rebus.PostgreSql.Tests.csproj", "{7ECBEE2F-C448-40B0-8C5F-6F157AB4E79F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{51316548-FAA3-47D9-ADBA-D135AB8213AE}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0B87093-B81F-4507-A95C-D4F000185A5B}
 	EndGlobalSection
 EndGlobal
