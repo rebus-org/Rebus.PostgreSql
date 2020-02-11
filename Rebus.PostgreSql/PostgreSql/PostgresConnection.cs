@@ -26,6 +26,14 @@ namespace Rebus.PostgreSql
         }
 
         /// <summary>
+        /// Constructs the wrapper with the given connection which should already be enlisted in a transaction.
+        /// </summary>
+        public PostgresConnection(NpgsqlConnection currentConnection)
+        {
+            _currentConnection = currentConnection ?? throw new ArgumentNullException(nameof(currentConnection));
+        }
+
+        /// <summary>
         /// Creates a new command, enlisting it in the current transaction
         /// </summary>
         public NpgsqlCommand CreateCommand()

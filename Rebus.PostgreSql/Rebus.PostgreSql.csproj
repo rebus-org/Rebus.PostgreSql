@@ -46,6 +46,9 @@
     <PackageReference Include="rebus" Version="4.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
   </ItemGroup>
+  <ItemGroup>
+	<Reference Include="System.Transactions" />
+  </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="$(ProjectDir)..\scripts\patch_assemblyinfo.cmd $(ProjectDir)" />
   </Target>
