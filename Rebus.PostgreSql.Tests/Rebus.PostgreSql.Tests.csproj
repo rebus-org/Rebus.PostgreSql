@@ -35,4 +35,7 @@
     <PackageReference Include="rebus" Version="4.0.0" />
     <PackageReference Include="rebus.tests.contracts" Version="4.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Transactions" />
+  </ItemGroup>
 </Project>
