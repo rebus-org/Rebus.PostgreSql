@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NpgsqlTypes;
+using Rebus.Internals;
 using Rebus.Logging;
 using Rebus.Serialization;
 using Rebus.Time;
@@ -21,18 +22,18 @@ namespace Rebus.PostgreSql.Timeouts
         readonly DictionarySerializer _dictionarySerializer = new DictionarySerializer();
         readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
+        readonly IRebusTime _rebusTime;
         readonly ILog _log;
 
         /// <summary>
         /// Constructs the timeout manager
         /// </summary>
-        public PostgreSqlTimeoutManager(IPostgresConnectionProvider connectionHelper, string tableName, IRebusLoggerFactory rebusLoggerFactory)
+        public PostgreSqlTimeoutManager(IPostgresConnectionProvider connectionHelper, string tableName, IRebusLoggerFactory rebusLoggerFactory, IRebusTime rebusTime)
         {
-            if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
-            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
-            _connectionHelper = connectionHelper;
-            _tableName = tableName;
+            _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
+            _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+            _rebusTime = rebusTime ?? throw new ArgumentNullException(nameof(rebusTime));
             _log = rebusLoggerFactory.GetLogger<PostgreSqlTimeoutManager>();
         }
 
@@ -88,7 +89,7 @@ ORDER BY ""due_time""
 FOR UPDATE;
 
 ";
-                    command.Parameters.Add("current_time", NpgsqlDbType.Timestamp).Value = RebusTime.Now.ToUniversalTime().DateTime;
+                    command.Parameters.Add("current_time", NpgsqlDbType.Timestamp).Value = _rebusTime.Now.ToUniversalTime().DateTime;
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -131,21 +132,23 @@ FOR UPDATE;
         /// </summary>
         public void EnsureTableIsCreated()
         {
-            using (var connection = _connectionHelper.GetConnection().Result)
+            AsyncHelpers.RunSync(async () =>
             {
-                var tableNames = connection.GetTableNames();
-
-                if (tableNames.Contains(_tableName))
+                using (var connection = await _connectionHelper.GetConnection())
                 {
-                    return;
-                }
+                    var tableNames = connection.GetTableNames();
 
-                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+                    if (tableNames.Contains(_tableName))
+                    {
+                        return;
+                    }
 
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText =
-                        $@"
+                    _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText =
+                            $@"
 CREATE TABLE ""{_tableName}"" (
     ""id"" BIGSERIAL NOT NULL,
     ""due_time"" TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -155,20 +158,21 @@ CREATE TABLE ""{_tableName}"" (
 );
 ";
 
-                    command.ExecuteNonQuery();
-                }
+                        command.ExecuteNonQuery();
+                    }
 
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = $@"
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = $@"
 CREATE INDEX ON ""{_tableName}"" (""due_time"");
 ";
 
-                    command.ExecuteNonQuery();
-                }
+                        command.ExecuteNonQuery();
+                    }
 
-                Task.Run(async () => await connection.Complete()).Wait();
-            }
+                    await connection.Complete();
+                }
+            });
         }
     }
 }

@@ -7,6 +7,7 @@ using Rebus.PostgreSql.Transport;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Transports;
 using Rebus.Threading.TaskParallelLibrary;
+using Rebus.Time;
 using Rebus.Transport;
 
 namespace Rebus.PostgreSql.Tests.Transport
@@ -33,7 +34,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             var consoleLoggerFactory = new ConsoleLoggerFactory(false);
             var connectionHelper = new PostgresConnectionHelper(PostgreSqlTestHelper.ConnectionString);
             var asyncTaskFactory = new TplAsyncTaskFactory(consoleLoggerFactory);
-            var transport = new PostgreSqlTransport(connectionHelper, tableName, null, consoleLoggerFactory, asyncTaskFactory);
+            var transport = new PostgreSqlTransport(connectionHelper, tableName, null, consoleLoggerFactory, asyncTaskFactory, new DefaultRebusTime());
 
             _disposables.Add(transport);
 
@@ -52,7 +53,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             var consoleLoggerFactory = new ConsoleLoggerFactory(false);
             var connectionHelper = new PostgresConnectionHelper(PostgreSqlTestHelper.ConnectionString);
             var asyncTaskFactory = new TplAsyncTaskFactory(consoleLoggerFactory);
-            var transport = new PostgreSqlTransport(connectionHelper, tableName, inputQueueAddress, consoleLoggerFactory, asyncTaskFactory);
+            var transport = new PostgreSqlTransport(connectionHelper, tableName, inputQueueAddress, consoleLoggerFactory, asyncTaskFactory, new DefaultRebusTime());
 
             _disposables.Add(transport);
 
@@ -67,7 +68,11 @@ namespace Rebus.PostgreSql.Tests.Transport
             _disposables.ForEach(d => d.Dispose());
             _disposables.Clear();
 
-            _tablesToDrop.ForEach(PostgreSqlTestHelper.DropTable);
+            foreach (var tableName in _tablesToDrop)
+            {
+                PostgreSqlTestHelper.DropTable(tableName);
+            }
+
             _tablesToDrop.Clear();
         }
     }

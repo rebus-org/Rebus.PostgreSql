@@ -33,6 +33,7 @@ namespace Rebus.PostgreSql.Transport
         readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
         readonly string _inputQueueName;
+        readonly IRebusTime _rebusTime;
         readonly AsyncBottleneck _receiveBottleneck = new AsyncBottleneck(20);
         readonly IAsyncTask _expiredMessagesCleanupTask;
         readonly ILog _log;
@@ -59,7 +60,8 @@ namespace Rebus.PostgreSql.Transport
         /// <param name="inputQueueName"></param>
         /// <param name="rebusLoggerFactory"></param>
         /// <param name="asyncTaskFactory"></param>
-        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory)
+        /// <param name="rebusTime"></param>
+        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime)
         {
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));
@@ -68,6 +70,7 @@ namespace Rebus.PostgreSql.Transport
             _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
             _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
             _inputQueueName = inputQueueName;
+            _rebusTime = rebusTime;
             _expiredMessagesCleanupTask = asyncTaskFactory.Create("ExpiredMessagesCleanup", PerformExpiredMessagesCleanupCycle, intervalSeconds: 60);
 
             ExpiredMessagesCleanupInterval = DefaultExpiredMessagesCleanupInterval;
@@ -267,19 +270,21 @@ body
 
         void CreateSchema()
         {
-            using (var connection = _connectionHelper.GetConnection().Result)
+            AsyncHelpers.RunSync(async () =>
             {
-                var tableNames = connection.GetTableNames();
-
-                if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
+                using (var connection = await _connectionHelper.GetConnection())
                 {
-                    _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
-                    return;
-                }
+                    var tableNames = connection.GetTableNames();
 
-                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+                    if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
+                        return;
+                    }
 
-                ExecuteCommands(connection, $@"
+                    _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+
+                    ExecuteCommands(connection, $@"
 CREATE TABLE {_tableName}
 (
 	id serial NOT NULL,
@@ -300,8 +305,9 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
 );
 ");
 
-                AsyncHelpers.RunSync(() => connection.Complete());
-            }
+                    await connection.Complete();
+                }
+            });
         }
 
         static void ExecuteCommands(PostgresConnection connection, string sqlCommands)
@@ -357,8 +363,8 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
                     {
                         var dbConnection = await _connectionHelper.GetConnection();
                         var connectionWrapper = new ConnectionWrapper(dbConnection);
-                        context.OnCommitted(async () => await dbConnection.Complete());
-                        context.OnDisposed(() => connectionWrapper.Dispose());
+                        context.OnCommitted(async ctx => await dbConnection.Complete());
+                        context.OnDisposed(ctx => connectionWrapper.Dispose());
                         return connectionWrapper;
                     });
         }
@@ -394,7 +400,7 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
             }
         }
 
-        static int GetInitialVisibilityDelay(IDictionary<string, string> headers)
+        int GetInitialVisibilityDelay(IDictionary<string, string> headers)
         {
             if (!headers.TryGetValue(Headers.DeferredUntil, out var deferredUntilDateTimeOffsetString))
             {
@@ -405,7 +411,7 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
 
             headers.Remove(Headers.DeferredUntil);
 
-            return (int)(deferredUntilTime - RebusTime.Now).TotalSeconds;
+            return (int)(deferredUntilTime - _rebusTime.Now).TotalSeconds;
         }
 
         static int GetTtlSeconds(IReadOnlyDictionary<string, string> headers)

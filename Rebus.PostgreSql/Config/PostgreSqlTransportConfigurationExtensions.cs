@@ -4,6 +4,7 @@ using Rebus.Pipeline.Receive;
 using Rebus.PostgreSql;
 using Rebus.PostgreSql.Transport;
 using Rebus.Threading;
+using Rebus.Time;
 using Rebus.Timeouts;
 using Rebus.Transport;
 
@@ -61,7 +62,8 @@ namespace Rebus.Config
             {
                 var rebusLoggerFactory = context.Get<IRebusLoggerFactory>();
                 var asyncTaskFactory = context.Get<IAsyncTaskFactory>();
-                var transport = new PostgreSqlTransport(connectionProvider, tableName, inputQueueName, rebusLoggerFactory, asyncTaskFactory);
+                var rebusTime = context.Get<IRebusTime>();
+                var transport = new PostgreSqlTransport(connectionProvider, tableName, inputQueueName, rebusLoggerFactory, asyncTaskFactory, rebusTime);
                 transport.EnsureTableIsCreated();
                 return transport;
             });

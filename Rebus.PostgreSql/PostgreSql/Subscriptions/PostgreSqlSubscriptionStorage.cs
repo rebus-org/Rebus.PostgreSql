@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 using Rebus.Extensions;
+using Rebus.Internals;
 using Rebus.Logging;
 using Rebus.Subscriptions;
 
@@ -27,11 +28,9 @@ namespace Rebus.PostgreSql.Subscriptions
         /// </summary>
         public PostgreSqlSubscriptionStorage(IPostgresConnectionProvider connectionHelper, string tableName, bool isCentralized, IRebusLoggerFactory rebusLoggerFactory)
         {
-            if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
-            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
-            _connectionHelper = connectionHelper;
-            _tableName = tableName;
+            _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
+            _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
             IsCentralized = isCentralized;
             _log = rebusLoggerFactory.GetLogger<PostgreSqlSubscriptionStorage>();
         }
@@ -41,30 +40,33 @@ namespace Rebus.PostgreSql.Subscriptions
         /// </summary>
         public void EnsureTableIsCreated()
         {
-            using (var connection = _connectionHelper.GetConnection().Result)
+            AsyncHelpers.RunSync(async () =>
             {
-                var tableNames = connection.GetTableNames().ToHashSet();
-
-                if (tableNames.Contains(_tableName)) return;
-
-                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
-
-                using (var command = connection.CreateCommand())
+                using (var connection = await _connectionHelper.GetConnection())
                 {
-                    command.CommandText =
-                        $@"
+                    var tableNames = connection.GetTableNames();
+
+                    if (tableNames.Contains(_tableName)) return;
+
+                    _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText =
+                            $@"
 CREATE TABLE ""{_tableName
-                            }"" (
+                                }"" (
 	""topic"" VARCHAR(200) NOT NULL,
 	""address"" VARCHAR(200) NOT NULL,
 	PRIMARY KEY (""topic"", ""address"")
 );
 ";
-                    command.ExecuteNonQuery();
-                }
+                        command.ExecuteNonQuery();
+                    }
 
-                Task.Run(async () => await connection.Complete()).Wait();
-            }
+                    await connection.Complete();
+                }
+            });
         }
 
         /// <summary>

@@ -37,6 +37,9 @@
 * Update Rebus dependency to v. 5
 * Enable Postgres connection to enlist in ambient transaction - thanks [KasperDamgaard]
 
+## 7.0.0
+* Update to Rebus 6
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc

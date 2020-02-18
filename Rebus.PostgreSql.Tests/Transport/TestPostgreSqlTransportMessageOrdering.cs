@@ -9,6 +9,7 @@ using Rebus.Messages;
 using Rebus.PostgreSql.Transport;
 using Rebus.Tests.Contracts;
 using Rebus.Threading.TaskParallelLibrary;
+using Rebus.Time;
 using Rebus.Transport;
 
 namespace Rebus.PostgreSql.Tests.Transport
@@ -93,7 +94,8 @@ namespace Rebus.PostgreSql.Tests.Transport
                     TableName,
                     QueueName,
                     loggerFactory,
-                    asyncTaskFactory
+                    asyncTaskFactory,
+                    new DefaultRebusTime()
                 );
 
             transport.EnsureTableIsCreated();

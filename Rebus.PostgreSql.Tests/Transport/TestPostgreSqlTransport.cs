@@ -11,6 +11,7 @@ using Rebus.Messages;
 using Rebus.PostgreSql.Transport;
 using Rebus.Tests.Contracts;
 using Rebus.Threading.TaskParallelLibrary;
+using Rebus.Time;
 using Rebus.Transport;
 
 namespace Rebus.PostgreSql.Tests.Transport
@@ -29,7 +30,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             var consoleLoggerFactory = new ConsoleLoggerFactory(false);
             var asyncTaskFactory = new TplAsyncTaskFactory(consoleLoggerFactory);
             var connectionHelper = new PostgresConnectionHelper(PostgreSqlTestHelper.ConnectionString);
-            _transport = new PostgreSqlTransport(connectionHelper, _tableName, QueueName, consoleLoggerFactory, asyncTaskFactory);
+            _transport = new PostgreSqlTransport(connectionHelper, _tableName, QueueName, consoleLoggerFactory, asyncTaskFactory, new DefaultRebusTime());
             _transport.EnsureTableIsCreated();
 
             Using(_transport);

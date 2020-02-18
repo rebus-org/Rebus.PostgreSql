@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using NpgsqlTypes;
 using Rebus.Auditing.Sagas;
 using Rebus.Extensions;
+using Rebus.Internals;
 using Rebus.Sagas;
 using Rebus.Serialization;
 
@@ -65,16 +66,18 @@ INSERT
         /// </summary>
         public void EnsureTableIsCreated()
         {
-            using (var connection = _connectionHelper.GetConnection().Result)
+            AsyncHelpers.RunSync(async () =>
             {
-                var tableNames = connection.GetTableNames().ToHashSet();
-
-                if (tableNames.Contains(_tableName)) return;
-
-                using (var command = connection.CreateCommand())
+                using (var connection = await _connectionHelper.GetConnection())
                 {
-                    command.CommandText =
-                        $@"
+                    var tableNames = connection.GetTableNames();
+
+                    if (tableNames.Contains(_tableName)) return;
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText =
+                            $@"
 CREATE TABLE ""{_tableName}"" (
 	""id"" UUID NOT NULL,
 	""revision"" INTEGER NOT NULL,
@@ -84,11 +87,12 @@ CREATE TABLE ""{_tableName}"" (
 );
 ";
 
-                    command.ExecuteNonQuery();
-                }
+                        command.ExecuteNonQuery();
+                    }
 
-                Task.Run(async () => await connection.Complete()).Wait();
-            }
+                    await connection.Complete();
+                }
+            });
         }
     }
 }

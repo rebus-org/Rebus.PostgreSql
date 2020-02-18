@@ -61,7 +61,7 @@ namespace Rebus.Internals
                 {
                     try
                     {
-                        await _task().ConfigureAwait(false);
+                        await _task();
                     }
                     catch (Exception exception)
                     {
