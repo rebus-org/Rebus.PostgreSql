@@ -77,8 +77,7 @@ namespace Rebus.PostgreSql.Tests.Transport
             }
         }
 
-
-        [TestCase(1000)]
+        [TestCase(200)]
         public async Task LotsOfAsyncStuffGoingDown(int numberOfMessages)
         {
             var receivedMessages = 0;
