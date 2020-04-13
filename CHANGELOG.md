@@ -43,8 +43,13 @@
 
 * Update Npgsql dependency to 4.1.3 to get the latest security fixes (and update targets to .NET 4.6.1/.NET Standard 2.0 because required to do so)
 
+## 5.2.0
+
+* Delete expired messages regardless of their destination queue, thus making it possible for abandoned messages to expire - thanks [zabulus]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
 [enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
+[zabulus]: https://github.com/zabulus
