@@ -40,9 +40,13 @@
 ## 7.0.0
 * Update to Rebus 6
 
+## 7.1.0
+* Delete expired messages regardless of their destination queue, thus making it possible for abandoned messages to expire - thanks [zabulus]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
 [enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
 [KasperDamgaard]: https://github.com/KasperDamgaard
+[zabulus]: https://github.com/zabulus
