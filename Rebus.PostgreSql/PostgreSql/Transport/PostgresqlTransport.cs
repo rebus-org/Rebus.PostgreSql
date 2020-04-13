@@ -225,11 +225,9 @@ body
                     {
                         command.CommandText =
                             $@"
-	            delete from {_tableName} 
-				where recipient = @recipient 
-				and expiration < clock_timestamp()
+                delete from {_tableName} 
+                where expiration < clock_timestamp()
 ";
-                        command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = _inputQueueName;
                         affectedRows = await command.ExecuteNonQueryAsync();
                     }
 
