@@ -37,9 +37,13 @@
 * Update Rebus dependency to v. 5
 * Enable Postgres connection to enlist in ambient transaction - thanks [KasperDamgaard]
 
+## 6.1.0
+* Delete expired messages regardless of their destination queue, thus making it possible for abandoned messages to expire - thanks [zabulus]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
 [enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
 [KasperDamgaard]: https://github.com/KasperDamgaard
+[zabulus]: https://github.com/zabulus
