@@ -43,10 +43,14 @@
 ## 7.1.0
 * Delete expired messages regardless of their destination queue, thus making it possible for abandoned messages to expire - thanks [zabulus]
 
+## 7.1.1
+* Add index to improve dequeueing performance for the transport - thanks [knutsr]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
 [enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
 [KasperDamgaard]: https://github.com/KasperDamgaard
+[knutsr]: https://github.com/knutsr
 [zabulus]: https://github.com/zabulus
