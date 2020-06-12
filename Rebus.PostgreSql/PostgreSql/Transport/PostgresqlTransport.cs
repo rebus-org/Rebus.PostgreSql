@@ -301,6 +301,13 @@ CREATE INDEX idx_receive_{_tableName} ON {_tableName}
     expiration ASC,
     visible ASC
 );
+----
+CREATE INDEX idx_dequeue_{_tableName} ON {_tableName}
+(
+    priority DESC,
+    visible ASC,
+    id ASC
+);
 ");
 
                     await connection.Complete();
