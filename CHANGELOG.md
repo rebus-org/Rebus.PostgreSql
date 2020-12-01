@@ -46,6 +46,9 @@
 ## 7.1.1
 * Add index to improve dequeueing performance for the transport - thanks [knutsr]
 
+## 7.2.0
+* Add target for .NET 5 - thanks [mastersign]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
@@ -53,4 +56,5 @@
 [jmkelly]: https://github.com/jmkelly
 [KasperDamgaard]: https://github.com/KasperDamgaard
 [knutsr]: https://github.com/knutsr
+[mastersign]: https://github.com/mastersign
 [zabulus]: https://github.com/zabulus
