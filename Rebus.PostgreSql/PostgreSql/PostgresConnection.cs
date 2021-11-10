@@ -14,15 +14,17 @@ namespace Rebus.PostgreSql
         readonly NpgsqlConnection _currentConnection;
         NpgsqlTransaction _currentTransaction;
 
+        readonly bool _managedExternally;
         bool _disposed;
 
         /// <summary>
         /// Constructs the wrapper with the given connection and transaction
         /// </summary>
-        public PostgresConnection(NpgsqlConnection currentConnection, NpgsqlTransaction currentTransaction)
+        public PostgresConnection(NpgsqlConnection currentConnection, NpgsqlTransaction currentTransaction, bool managedExternally = false)
         {
             _currentConnection = currentConnection ?? throw new ArgumentNullException(nameof(currentConnection));
             _currentTransaction = currentTransaction ?? throw new ArgumentNullException(nameof(currentTransaction));
+            _managedExternally = managedExternally;
         }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace Rebus.PostgreSql
 
         public async Task Complete()
         {
+            if (_managedExternally) return;
             if (_currentTransaction == null) return;
             using (_currentTransaction)
             {
@@ -62,6 +65,7 @@ namespace Rebus.PostgreSql
         /// </summary>
         public void Dispose()
         {
+            if (_managedExternally) return;
             if (_disposed) return;
 
             try
