@@ -49,6 +49,9 @@
 ## 7.2.0
 * Add target for .NET 5 - thanks [mastersign]
 
+## 7.3.0
+* Add flag in DB provider to indicate that the connection/transaction is managed externally - thanks [Laurianti]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
@@ -56,5 +59,6 @@
 [jmkelly]: https://github.com/jmkelly
 [KasperDamgaard]: https://github.com/KasperDamgaard
 [knutsr]: https://github.com/knutsr
+[Laurianti]: https://github.com/Laurianti
 [mastersign]: https://github.com/mastersign
 [zabulus]: https://github.com/zabulus
