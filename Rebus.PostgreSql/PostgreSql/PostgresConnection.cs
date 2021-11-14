@@ -30,9 +30,10 @@ namespace Rebus.PostgreSql
         /// <summary>
         /// Constructs the wrapper with the given connection which should already be enlisted in a transaction.
         /// </summary>
-        public PostgresConnection(NpgsqlConnection currentConnection)
+        public PostgresConnection(NpgsqlConnection currentConnection, bool managedExternally = false)
         {
             _currentConnection = currentConnection ?? throw new ArgumentNullException(nameof(currentConnection));
+            _managedExternally = managedExternally;
         }
 
         /// <summary>
