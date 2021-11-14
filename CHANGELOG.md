@@ -52,6 +52,9 @@
 ## 7.3.0
 * Add flag in DB provider to indicate that the connection/transaction is managed externally - thanks [Laurianti]
 
+## 7.3.1
+* Additional flag for indicating that connection/transaction is managed externally - thanks [Laurianti]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
