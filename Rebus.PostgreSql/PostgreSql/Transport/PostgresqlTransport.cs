@@ -256,9 +256,17 @@ body
         /// </summary>
         public void EnsureTableIsCreated()
         {
+            AsyncHelpers.RunSync(EnsureTableIsCreatedAsync);
+        }
+
+        /// <summary>
+        /// Creates asynchronously the necessary table
+        /// </summary>
+        public async Task EnsureTableIsCreatedAsync()
+        {
             try
             {
-                CreateSchema();
+                await CreateSchemaAsync();
             }
             catch (Exception exception)
             {
@@ -266,23 +274,21 @@ body
             }
         }
 
-        void CreateSchema()
+        async Task CreateSchemaAsync()
         {
-            AsyncHelpers.RunSync(async () =>
+            using (var connection = await _connectionHelper.GetConnection())
             {
-                using (var connection = await _connectionHelper.GetConnection())
+                var tableNames = connection.GetTableNames();
+
+                if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
                 {
-                    var tableNames = connection.GetTableNames();
+                    _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
+                    return;
+                }
 
-                    if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
-                    {
-                        _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
-                        return;
-                    }
+                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
 
-                    _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
-
-                    ExecuteCommands(connection, $@"
+                ExecuteCommands(connection, $@"
 CREATE TABLE {_tableName}
 (
 	id serial NOT NULL,
@@ -310,9 +316,8 @@ CREATE INDEX idx_dequeue_{_tableName} ON {_tableName}
 );
 ");
 
-                    await connection.Complete();
-                }
-            });
+                await connection.Complete();
+            }
         }
 
         static void ExecuteCommands(PostgresConnection connection, string sqlCommands)
