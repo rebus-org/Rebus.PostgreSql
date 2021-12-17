@@ -52,17 +52,17 @@ namespace Rebus.PostgreSql.Transport
 
         const int OperationCancelledNumber = 3980;
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="connectionHelper"></param>
-		/// <param name="tableName"></param>
-		/// <param name="inputQueueName"></param>
-		/// <param name="rebusLoggerFactory"></param>
-		/// <param name="asyncTaskFactory"></param>
-		/// <param name="rebusTime"></param>
-		/// <param name="expiredMessagesCleanupInterval"></param>
-		public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime, TimeSpan? expiredMessagesCleanupInterval = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connectionHelper"></param>
+        /// <param name="tableName"></param>
+        /// <param name="inputQueueName"></param>
+        /// <param name="rebusLoggerFactory"></param>
+        /// <param name="asyncTaskFactory"></param>
+        /// <param name="rebusTime"></param>
+        /// <param name="expiredMessagesCleanupInterval"></param>
+        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime, TimeSpan? expiredMessagesCleanupInterval = null)
         {
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));
