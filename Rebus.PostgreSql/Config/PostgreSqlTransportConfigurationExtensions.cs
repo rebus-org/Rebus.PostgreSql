@@ -7,6 +7,7 @@ using Rebus.Threading;
 using Rebus.Time;
 using Rebus.Timeouts;
 using Rebus.Transport;
+using System;
 
 namespace Rebus.Config
 {
@@ -20,9 +21,9 @@ namespace Rebus.Config
         /// store messages, and the "queue" specified by <paramref name="inputQueueName"/> will be used when querying for messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, string inputQueueName)
+        public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval = null)
         {
-            UsePostgreSql(configurer, new PostgresConnectionHelper(connectionString), tableName, inputQueueName);
+            UsePostgreSql(configurer, new PostgresConnectionHelper(connectionString), tableName, inputQueueName, expiredMessagesCleanupInterval);
         }
 
         /// <summary>
@@ -30,9 +31,9 @@ namespace Rebus.Config
         /// store messages, and the "queue" specified by <paramref name="inputQueueName"/> will be used when querying for messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName)
+        public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval = null)
         {
-            Configure(configurer, connectionProvider, tableName, inputQueueName);
+            Configure(configurer, connectionProvider, tableName, inputQueueName, expiredMessagesCleanupInterval);
         }
 
         /// <summary>
@@ -40,9 +41,9 @@ namespace Rebus.Config
         /// The table specified by <paramref name="tableName"/> will be used to store messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName)
+        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, TimeSpan? expiredMessagesCleanupInterval = null)
         {
-            UsePostgreSqlAsOneWayClient(configurer, new PostgresConnectionHelper(connectionString), tableName);
+            UsePostgreSqlAsOneWayClient(configurer, new PostgresConnectionHelper(connectionString), tableName, expiredMessagesCleanupInterval);
         }
 
         /// <summary>
@@ -50,20 +51,20 @@ namespace Rebus.Config
         /// The table specified by <paramref name="tableName"/> will be used to store messages.
         /// The message table will automatically be created if it does not exist.
         /// </summary>
-        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName)
+        public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, TimeSpan? expiredMessagesCleanupInterval = null)
         {
-            Configure(configurer, connectionProvider, tableName, null);
+            Configure(configurer, connectionProvider, tableName, null, expiredMessagesCleanupInterval);
             OneWayClientBackdoor.ConfigureOneWayClient(configurer);
         }
 
-        static void Configure(StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName)
+        static void Configure(StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval)
         {
             configurer.Register(context =>
             {
                 var rebusLoggerFactory = context.Get<IRebusLoggerFactory>();
                 var asyncTaskFactory = context.Get<IAsyncTaskFactory>();
                 var rebusTime = context.Get<IRebusTime>();
-                var transport = new PostgreSqlTransport(connectionProvider, tableName, inputQueueName, rebusLoggerFactory, asyncTaskFactory, rebusTime);
+                var transport = new PostgreSqlTransport(connectionProvider, tableName, inputQueueName, rebusLoggerFactory, asyncTaskFactory, rebusTime, expiredMessagesCleanupInterval);
                 transport.EnsureTableIsCreated();
                 return transport;
             });
