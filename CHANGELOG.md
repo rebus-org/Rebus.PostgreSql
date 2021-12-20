@@ -55,6 +55,9 @@
 ## 7.3.1
 * Additional flag for indicating that connection/transaction is managed externally - thanks [Laurianti]
 
+## 7.4.0
+* Optional parameters to enable configuring the expired messages cleanup interval - thanks [Laurianti]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
