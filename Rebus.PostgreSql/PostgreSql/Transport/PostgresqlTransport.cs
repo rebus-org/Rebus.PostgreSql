@@ -48,7 +48,7 @@ namespace Rebus.PostgreSql.Transport
         /// <summary>
         /// Indicates the default interval between which expired messages will be cleaned up
         /// </summary>
-        public static readonly TimeSpan DefaultExpiredMessagesCleanupInterval = TimeSpan.FromSeconds(20);
+        public static readonly TimeSpan DefaultExpiredMessagesCleanupInterval = TimeSpan.FromSeconds(60);
 
         const int OperationCancelledNumber = 3980;
 
@@ -61,7 +61,8 @@ namespace Rebus.PostgreSql.Transport
         /// <param name="rebusLoggerFactory"></param>
         /// <param name="asyncTaskFactory"></param>
         /// <param name="rebusTime"></param>
-        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime)
+        /// <param name="expiredMessagesCleanupInterval"></param>
+        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime, TimeSpan? expiredMessagesCleanupInterval = null)
         {
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));
@@ -71,9 +72,10 @@ namespace Rebus.PostgreSql.Transport
             _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
             _inputQueueName = inputQueueName;
             _rebusTime = rebusTime;
-            _expiredMessagesCleanupTask = asyncTaskFactory.Create("ExpiredMessagesCleanup", PerformExpiredMessagesCleanupCycle, intervalSeconds: 60);
 
-            ExpiredMessagesCleanupInterval = DefaultExpiredMessagesCleanupInterval;
+            var cleanupInterval = expiredMessagesCleanupInterval ?? DefaultExpiredMessagesCleanupInterval;
+            var intervalSeconds = (int)cleanupInterval.TotalSeconds;
+            _expiredMessagesCleanupTask = asyncTaskFactory.Create("ExpiredMessagesCleanup", PerformExpiredMessagesCleanupCycle, intervalSeconds: intervalSeconds);
         }
 
         /// <inheritdoc />
@@ -82,11 +84,6 @@ namespace Rebus.PostgreSql.Transport
             if (_inputQueueName == null) return;
             _expiredMessagesCleanupTask.Start();
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public TimeSpan ExpiredMessagesCleanupInterval { get; set; }
 
         /// <summary>The SQL transport doesn't really have queues, so this function does nothing</summary>
         public void CreateQueue(string address)
