@@ -16,7 +16,7 @@ public class CheckExceptionOnCancellation : FixtureBase
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        await using var connection = new NpgsqlConnection("server=localhost; database=rebus2_test; user id=postgres; password=postgres");
+        await using var connection = new NpgsqlConnection(PostgreSqlTestHelper.ConnectionString);
         await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
         command.CommandText = @"select table_name from information_schema.tables";
