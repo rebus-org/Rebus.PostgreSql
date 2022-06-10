@@ -58,6 +58,10 @@
 ## 7.4.0
 * Optional parameters to enable configuring the expired messages cleanup interval - thanks [Laurianti]
 
+## 8.0.0
+* Remove unnecessary System.Data.SqlClient dependency
+* Update Npgsql dependency to 6.0.4
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
