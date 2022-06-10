@@ -12,68 +12,67 @@ using Rebus.Threading.TaskParallelLibrary;
 using Rebus.Time;
 using Rebus.Transport;
 
-namespace Rebus.PostgreSql.Tests.Bugs
+namespace Rebus.PostgreSql.Tests.Bugs;
+
+[TestFixture, Category(Categories.PostgreSql)]
+public class PublishWithinTransactionScopeTests : FixtureBase
 {
-    [TestFixture, Category(Categories.PostgreSql)]
-    public class PublishWithinTransactionScopeTests : FixtureBase
+    readonly string _tableName = "messages" + TestConfig.Suffix;
+    PostgreSqlTransport _transport;
+    CancellationToken _cancellationToken;
+    const string QueueName = "input";
+
+    protected override void SetUp()
     {
-        readonly string _tableName = "messages" + TestConfig.Suffix;
-        PostgreSqlTransport _transport;
-        CancellationToken _cancellationToken;
-        const string QueueName = "input";
+        PostgreSqlTestHelper.DropTable(_tableName);
+        var consoleLoggerFactory = new ConsoleLoggerFactory(false);
+        var asyncTaskFactory = new TplAsyncTaskFactory(consoleLoggerFactory);
+        var connectionHelper = new PostgresConnectionHelper(PostgreSqlTestHelper.ConnectionString);
+        _transport = new PostgreSqlTransport(connectionHelper, _tableName, QueueName, consoleLoggerFactory, asyncTaskFactory, new DefaultRebusTime());
+        _transport.EnsureTableIsCreated();
 
-        protected override void SetUp()
+        Using(_transport);
+
+        _transport.Initialize();
+        _cancellationToken = new CancellationTokenSource().Token;
+    }
+
+    [Test]
+    public async Task ReceivesSentMessageWhenTransactionIsCommittedFromWithinAmbientDotNetTransactionScope()
+    {
+        using (var txScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
-            PostgreSqlTestHelper.DropTable(_tableName);
-            var consoleLoggerFactory = new ConsoleLoggerFactory(false);
-            var asyncTaskFactory = new TplAsyncTaskFactory(consoleLoggerFactory);
-            var connectionHelper = new PostgresConnectionHelper(PostgreSqlTestHelper.ConnectionString);
-            _transport = new PostgreSqlTransport(connectionHelper, _tableName, QueueName, consoleLoggerFactory, asyncTaskFactory, new DefaultRebusTime());
-            _transport.EnsureTableIsCreated();
-
-            Using(_transport);
-
-            _transport.Initialize();
-            _cancellationToken = new CancellationTokenSource().Token;
-        }
-
-        [Test]
-        public async Task ReceivesSentMessageWhenTransactionIsCommittedFromWithinAmbientDotNetTransactionScope()
-        {
-            using (var txScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                using (var scope = new RebusTransactionScope())
-                {
-                    await _transport.Send(QueueName, RecognizableMessage(), scope.TransactionContext);
-
-                    await scope.CompleteAsync();
-                }
-                txScope.Complete();
-            }
-
             using (var scope = new RebusTransactionScope())
             {
-                var transportMessage = await _transport.Receive(scope.TransactionContext, _cancellationToken);
+                await _transport.Send(QueueName, RecognizableMessage(), scope.TransactionContext);
 
                 await scope.CompleteAsync();
-
-                AssertMessageIsRecognized(transportMessage);
             }
+            txScope.Complete();
         }
 
-        void AssertMessageIsRecognized(TransportMessage transportMessage)
+        using (var scope = new RebusTransactionScope())
         {
-            Assert.That(transportMessage.Headers.GetValue("recognizzle"), Is.EqualTo("hej"));
-        }
+            var transportMessage = await _transport.Receive(scope.TransactionContext, _cancellationToken);
 
-        static TransportMessage RecognizableMessage(int id = 0)
-        {
-            var headers = new Dictionary<string, string>
-            {
-                {"recognizzle", "hej"},
-                {"id", id.ToString()}
-            };
-            return new TransportMessage(headers, new byte[] { 1, 2, 3 });
+            await scope.CompleteAsync();
+
+            AssertMessageIsRecognized(transportMessage);
         }
+    }
+
+    void AssertMessageIsRecognized(TransportMessage transportMessage)
+    {
+        Assert.That(transportMessage.Headers.GetValue("recognizzle"), Is.EqualTo("hej"));
+    }
+
+    static TransportMessage RecognizableMessage(int id = 0)
+    {
+        var headers = new Dictionary<string, string>
+        {
+            {"recognizzle", "hej"},
+            {"id", id.ToString()}
+        };
+        return new TransportMessage(headers, new byte[] { 1, 2, 3 });
     }
 }

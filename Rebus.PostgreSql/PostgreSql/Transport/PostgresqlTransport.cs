@@ -27,13 +27,13 @@ namespace Rebus.PostgreSql.Transport
     {
         const string CurrentConnectionKey = "postgresql-transport-current-connection";
 
-        static readonly HeaderSerializer HeaderSerializer = new HeaderSerializer();
+        static readonly HeaderSerializer HeaderSerializer = new();
 
         readonly IPostgresConnectionProvider _connectionHelper;
         readonly string _tableName;
         readonly string _inputQueueName;
         readonly IRebusTime _rebusTime;
-        readonly AsyncBottleneck _receiveBottleneck = new AsyncBottleneck(20);
+        readonly AsyncBottleneck _receiveBottleneck = new(20);
         readonly IAsyncTask _expiredMessagesCleanupTask;
         readonly ILog _log;
 
@@ -49,18 +49,9 @@ namespace Rebus.PostgreSql.Transport
         /// </summary>
         public static readonly TimeSpan DefaultExpiredMessagesCleanupInterval = TimeSpan.FromSeconds(60);
 
-        const int OperationCancelledNumber = 3980;
-
         /// <summary>
-        /// 
+        /// Creates the transport :)
         /// </summary>
-        /// <param name="connectionHelper"></param>
-        /// <param name="tableName"></param>
-        /// <param name="inputQueueName"></param>
-        /// <param name="rebusLoggerFactory"></param>
-        /// <param name="asyncTaskFactory"></param>
-        /// <param name="rebusTime"></param>
-        /// <param name="expiredMessagesCleanupInterval"></param>
         public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime, TimeSpan? expiredMessagesCleanupInterval = null)
         {
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
@@ -84,7 +75,7 @@ namespace Rebus.PostgreSql.Transport
             _expiredMessagesCleanupTask.Start();
         }
 
-        /// <summary>The SQL transport doesn't really have queues, so this function does nothing</summary>
+        /// <summary>The SQL transport doesn't really have pre-defined queues, so this function does nothing</summary>
         public void CreateQueue(string address)
         {
         }
@@ -110,9 +101,9 @@ namespace Rebus.PostgreSql.Transport
 
         async Task InnerSend(string destinationAddress, TransportMessage message, ConnectionWrapper connection)
         {
-            using (var command = connection.Connection.CreateCommand())
-            {
-                command.CommandText = $@"
+            using var command = connection.Connection.CreateCommand();
+            
+            command.CommandText = $@"
 INSERT INTO {_tableName}
 (
     recipient,
@@ -132,24 +123,23 @@ VALUES
     clock_timestamp() + @ttlseconds
 )";
 
-                var headers = message.Headers.Clone();
+            var headers = message.Headers.Clone();
 
-                var priority = GetMessagePriority(headers);
-                var initialVisibilityDelay = new TimeSpan(0, 0, 0, GetInitialVisibilityDelay(headers));
-                var ttlSeconds = new TimeSpan(0, 0, 0, GetTtlSeconds(headers));
+            var priority = GetMessagePriority(headers);
+            var initialVisibilityDelay = new TimeSpan(0, 0, 0, GetInitialVisibilityDelay(headers));
+            var ttlSeconds = new TimeSpan(0, 0, 0, GetTtlSeconds(headers));
 
-                // must be last because the other functions on the headers might change them
-                var serializedHeaders = HeaderSerializer.Serialize(headers);
+            // must be last because the other functions on the headers might change them
+            var serializedHeaders = HeaderSerializer.Serialize(headers);
 
-                command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = destinationAddress;
-                command.Parameters.Add("headers", NpgsqlDbType.Bytea).Value = serializedHeaders;
-                command.Parameters.Add("body", NpgsqlDbType.Bytea).Value = message.Body;
-                command.Parameters.Add("priority", NpgsqlDbType.Integer).Value = priority;
-                command.Parameters.Add("visible", NpgsqlDbType.Interval).Value = initialVisibilityDelay;
-                command.Parameters.Add("ttlseconds", NpgsqlDbType.Interval).Value = ttlSeconds;
+            command.Parameters.Add("recipient", NpgsqlDbType.Text).Value = destinationAddress;
+            command.Parameters.Add("headers", NpgsqlDbType.Bytea).Value = serializedHeaders;
+            command.Parameters.Add("body", NpgsqlDbType.Bytea).Value = message.Body;
+            command.Parameters.Add("priority", NpgsqlDbType.Integer).Value = priority;
+            command.Parameters.Add("visible", NpgsqlDbType.Interval).Value = initialVisibilityDelay;
+            command.Parameters.Add("ttlseconds", NpgsqlDbType.Interval).Value = ttlSeconds;
 
-                await command.ExecuteNonQueryAsync();
-            }
+            await command.ExecuteNonQueryAsync();
         }
 
         /// <inheritdoc />
@@ -182,13 +172,14 @@ body
 
                     selectCommand.Parameters.Add("recipient", NpgsqlDbType.Text).Value = _inputQueueName;
 
-                    using (var reader = await selectCommand.ExecuteReaderAsync(cancellationToken))
+                    await using (var reader = await selectCommand.ExecuteReaderAsync(cancellationToken))
                     {
                         if (!await reader.ReadAsync(cancellationToken)) return null;
 
                         var headers = reader["headers"];
-                        var headersDictionary = HeaderSerializer.Deserialize((byte[])headers);
                         var body = (byte[])reader["body"];
+                        
+                        var headersDictionary = HeaderSerializer.Deserialize((byte[])headers);
 
                         receivedTransportMessage = new TransportMessage(headersDictionary, body);
                     }
@@ -205,25 +196,24 @@ body
 
             while (true)
             {
-                using (var connection = await _connectionHelper.GetConnection())
-                {
-                    int affectedRows;
+                using var connection = await _connectionHelper.GetConnection();
+                
+                int affectedRows;
 
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText =
-                            $@"
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText =
+                        $@"
                 delete from {_tableName} 
                 where expiration < clock_timestamp()
 ";
-                        affectedRows = await command.ExecuteNonQueryAsync();
-                    }
-
-                    results += affectedRows;
-                    await connection.Complete();
-
-                    if (affectedRows == 0) break;
+                    affectedRows = await command.ExecuteNonQueryAsync();
                 }
+
+                results += affectedRows;
+                await connection.Complete();
+
+                if (affectedRows == 0) break;
             }
 
             if (results > 0)
@@ -264,19 +254,19 @@ body
 
         async Task CreateSchemaAsync()
         {
-            using (var connection = await _connectionHelper.GetConnection())
+            using var connection = await _connectionHelper.GetConnection();
+            
+            var tableNames = connection.GetTableNames();
+
+            if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
             {
-                var tableNames = connection.GetTableNames();
+                _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
+                return;
+            }
 
-                if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
-                {
-                    _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
-                    return;
-                }
+            _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
 
-                _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
-
-                ExecuteCommands(connection, $@"
+            ExecuteCommands(connection, $@"
 CREATE TABLE {_tableName}
 (
 	id serial NOT NULL,
@@ -304,20 +294,18 @@ CREATE INDEX idx_dequeue_{_tableName} ON {_tableName}
 );
 ");
 
-                await connection.Complete();
-            }
+            await connection.Complete();
         }
 
         static void ExecuteCommands(PostgresConnection connection, string sqlCommands)
         {
             foreach (var sqlCommand in sqlCommands.Split(new[] { "----" }, StringSplitOptions.RemoveEmptyEntries))
             {
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = sqlCommand;
+                using var command = connection.CreateCommand();
+                
+                command.CommandText = sqlCommand;
 
-                    Execute(command);
-                }
+                Execute(command);
             }
         }
 
@@ -361,8 +349,8 @@ CREATE INDEX idx_dequeue_{_tableName} ON {_tableName}
                     {
                         var dbConnection = await _connectionHelper.GetConnection();
                         var connectionWrapper = new ConnectionWrapper(dbConnection);
-                        context.OnCommitted(async ctx => await dbConnection.Complete());
-                        context.OnDisposed(ctx => connectionWrapper.Dispose());
+                        context.OnCommitted(async _ => await dbConnection.Complete());
+                        context.OnDisposed(_ => connectionWrapper.Dispose());
                         return connectionWrapper;
                     });
         }

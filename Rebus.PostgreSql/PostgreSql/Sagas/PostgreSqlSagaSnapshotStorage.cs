@@ -8,76 +8,76 @@ using Rebus.Internals;
 using Rebus.Sagas;
 using Rebus.Serialization;
 
-namespace Rebus.PostgreSql.Sagas
+namespace Rebus.PostgreSql.Sagas;
+
+/// <summary>
+/// Implementation of <see cref="ISagaSnapshotStorage"/> that uses PostgreSQL to store the snapshots
+/// </summary>
+public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
 {
+    readonly ObjectSerializer _objectSerializer = new ObjectSerializer();
+    readonly DictionarySerializer _dictionarySerializer = new DictionarySerializer();
+    readonly IPostgresConnectionProvider _connectionHelper;
+    readonly string _tableName;
+
     /// <summary>
-    /// Implementation of <see cref="ISagaSnapshotStorage"/> that uses PostgreSQL to store the snapshots
+    /// Constructs the storage
     /// </summary>
-    public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
+    public PostgreSqlSagaSnapshotStorage(IPostgresConnectionProvider connectionHelper, string tableName)
     {
-        readonly ObjectSerializer _objectSerializer = new ObjectSerializer();
-        readonly DictionarySerializer _dictionarySerializer = new DictionarySerializer();
-        readonly IPostgresConnectionProvider _connectionHelper;
-        readonly string _tableName;
+        if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
+        if (tableName == null) throw new ArgumentNullException(nameof(tableName));
+        _connectionHelper = connectionHelper;
+        _tableName = tableName;
+    }
 
-        /// <summary>
-        /// Constructs the storage
-        /// </summary>
-        public PostgreSqlSagaSnapshotStorage(IPostgresConnectionProvider connectionHelper, string tableName)
+    /// <summary>
+    /// Saves the <paramref name="sagaData"/> snapshot and the accompanying <paramref name="sagaAuditMetadata"/>
+    /// </summary>
+    public async Task Save(ISagaData sagaData, Dictionary<string, string> sagaAuditMetadata)
+    {
+        using (var connection = await _connectionHelper.GetConnection())
         {
-            if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
-            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
-            _connectionHelper = connectionHelper;
-            _tableName = tableName;
-        }
-
-        /// <summary>
-        /// Saves the <paramref name="sagaData"/> snapshot and the accompanying <paramref name="sagaAuditMetadata"/>
-        /// </summary>
-        public async Task Save(ISagaData sagaData, Dictionary<string, string> sagaAuditMetadata)
-        {
-            using (var connection = await _connectionHelper.GetConnection())
+            using (var command = connection.CreateCommand())
             {
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText =
-                        $@"
+                command.CommandText =
+                    $@"
 
 INSERT
     INTO ""{_tableName}"" (""id"", ""revision"", ""data"", ""metadata"")
     VALUES (@id, @revision, @data, @metadata);
 
 ";
-                    command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
-                    command.Parameters.Add("revision", NpgsqlDbType.Integer).Value = sagaData.Revision;
-                    command.Parameters.Add("data", NpgsqlDbType.Bytea).Value = _objectSerializer.Serialize(sagaData);
-                    command.Parameters.Add("metadata", NpgsqlDbType.Jsonb).Value =
-                        _dictionarySerializer.SerializeToString(sagaAuditMetadata);
+                command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
+                command.Parameters.Add("revision", NpgsqlDbType.Integer).Value = sagaData.Revision;
+                command.Parameters.Add("data", NpgsqlDbType.Bytea).Value = _objectSerializer.Serialize(sagaData);
+                command.Parameters.Add("metadata", NpgsqlDbType.Jsonb).Value =
+                    _dictionarySerializer.SerializeToString(sagaAuditMetadata);
 
-                    await command.ExecuteNonQueryAsync();
-                }
-                
-                await connection.Complete();
+                await command.ExecuteNonQueryAsync();
             }
+                
+            await connection.Complete();
         }
+    }
 
-        /// <summary>
-        /// Creates the necessary table if it does not already exist
-        /// </summary>
-        public void EnsureTableIsCreated()
+    /// <summary>
+    /// Creates the necessary table if it does not already exist
+    /// </summary>
+    public void EnsureTableIsCreated()
+    {
+        AsyncHelpers.RunSync(async () =>
         {
-            AsyncHelpers.RunSync(async () =>
+            using (var connection = await _connectionHelper.GetConnection())
             {
-                using (var connection = await _connectionHelper.GetConnection())
+                var tableNames = connection.GetTableNames();
+
+                if (tableNames.Contains(_tableName)) return;
+
+                using (var command = connection.CreateCommand())
                 {
-                    var tableNames = connection.GetTableNames();
-
-                    if (tableNames.Contains(_tableName)) return;
-
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText =
-                            $@"
+                    command.CommandText =
+                        $@"
 CREATE TABLE ""{_tableName}"" (
 	""id"" UUID NOT NULL,
 	""revision"" INTEGER NOT NULL,
@@ -87,12 +87,11 @@ CREATE TABLE ""{_tableName}"" (
 );
 ";
 
-                        command.ExecuteNonQuery();
-                    }
-
-                    await connection.Complete();
+                    command.ExecuteNonQuery();
                 }
-            });
-        }
+
+                await connection.Complete();
+            }
+        });
     }
 }

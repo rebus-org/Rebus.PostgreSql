@@ -1,7 +1,6 @@
-﻿namespace Rebus.PostgreSql.Tests
+﻿namespace Rebus.PostgreSql.Tests;
+
+class TestCategory
 {
-    internal class TestCategory
-    {
-        public const string Postgres = "postgresql";
-    }
+    public const string Postgres = "postgresql";
 }

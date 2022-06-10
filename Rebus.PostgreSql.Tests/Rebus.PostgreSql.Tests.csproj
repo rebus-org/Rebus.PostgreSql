@@ -1,21 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
- <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Rebus.PostgreSql\Rebus.PostgreSql.csproj" />
-    <PackageReference Include="microsoft.net.test.sdk" Version="16.5.0" />
-    <PackageReference Include="nunit" Version="3.12.0" />
-    <PackageReference Include="nunit3testadapter" Version="3.16.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="rebus" Version="6.0.0" />
-    <PackageReference Include="rebus.tests.contracts" Version="6.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assumptions\" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFrameworks>net6.0</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Include="..\Rebus.PostgreSql\Internals\AsyncHelpers.cs" Link="AsyncHelpers.cs" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\Rebus.PostgreSql\Rebus.PostgreSql.csproj" />
+		<PackageReference Include="microsoft.net.test.sdk" Version="16.5.0" />
+		<PackageReference Include="nunit" Version="3.12.0" />
+		<PackageReference Include="nunit3testadapter" Version="3.16.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="rebus" Version="6.0.0" />
+		<PackageReference Include="rebus.tests.contracts" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Assumptions\" />
+	</ItemGroup>
 </Project>

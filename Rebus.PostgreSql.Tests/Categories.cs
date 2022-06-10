@@ -1,7 +1,6 @@
-﻿namespace Rebus.PostgreSql.Tests
+﻿namespace Rebus.PostgreSql.Tests;
+
+public class Categories
 {
-    public class Categories
-    {
-        public const string PostgreSql = "PostgreSql";
-    }
+    public const string PostgreSql = "PostgreSql";
 }

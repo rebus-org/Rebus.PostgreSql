@@ -6,51 +6,50 @@ using Rebus.Tests.Contracts.Timeouts;
 using Rebus.Time;
 using Rebus.Timeouts;
 
-namespace Rebus.PostgreSql.Tests.Timeouts
+namespace Rebus.PostgreSql.Tests.Timeouts;
+
+[TestFixture, Category(TestCategory.Postgres)]
+public class TestPostgreSqlTimeoutManager : BasicStoreAndRetrieveOperations<PostgreSqlTimeoutManagerFactory>
 {
-    [TestFixture, Category(TestCategory.Postgres)]
-    public class TestPostgreSqlTimeoutManager : BasicStoreAndRetrieveOperations<PostgreSqlTimeoutManagerFactory>
+}
+
+public class PostgreSqlTimeoutManagerFactory : ITimeoutManagerFactory
+{
+    readonly FakeRebusTime _fakeRebusTime = new FakeRebusTime();
+
+    public PostgreSqlTimeoutManagerFactory()
     {
+        PostgreSqlTestHelper.DropTable("timeouts");
     }
 
-    public class PostgreSqlTimeoutManagerFactory : ITimeoutManagerFactory
+    public ITimeoutManager Create()
     {
-        readonly FakeRebusTime _fakeRebusTime = new FakeRebusTime();
+        var postgreSqlTimeoutManager = new PostgreSqlTimeoutManager(PostgreSqlTestHelper.ConnectionHelper, "timeouts", new ConsoleLoggerFactory(false), _fakeRebusTime);
+        postgreSqlTimeoutManager.EnsureTableIsCreated();
+        return postgreSqlTimeoutManager;
+    }
 
-        public PostgreSqlTimeoutManagerFactory()
-        {
-            PostgreSqlTestHelper.DropTable("timeouts");
-        }
+    public void Cleanup()
+    {
+        PostgreSqlTestHelper.DropTable("timeouts");
+    }
 
-        public ITimeoutManager Create()
-        {
-            var postgreSqlTimeoutManager = new PostgreSqlTimeoutManager(PostgreSqlTestHelper.ConnectionHelper, "timeouts", new ConsoleLoggerFactory(false), _fakeRebusTime);
-            postgreSqlTimeoutManager.EnsureTableIsCreated();
-            return postgreSqlTimeoutManager;
-        }
+    public string GetDebugInfo()
+    {
+        return "could not provide debug info for this particular timeout manager.... implement if needed :)";
+    }
 
-        public void Cleanup()
-        {
-            PostgreSqlTestHelper.DropTable("timeouts");
-        }
+    public void FakeIt(DateTimeOffset fakeTime)
+    {
+        _fakeRebusTime.SetNow(fakeTime);
+    }
 
-        public string GetDebugInfo()
-        {
-            return "could not provide debug info for this particular timeout manager.... implement if needed :)";
-        }
+    class FakeRebusTime : IRebusTime
+    {
+        Func<DateTimeOffset> _nowFactory = () => DateTimeOffset.Now;
 
-        public void FakeIt(DateTimeOffset fakeTime)
-        {
-            _fakeRebusTime.SetNow(fakeTime);
-        }
+        public DateTimeOffset Now => _nowFactory();
 
-        class FakeRebusTime : IRebusTime
-        {
-            Func<DateTimeOffset> _nowFactory = () => DateTimeOffset.Now;
-
-            public DateTimeOffset Now => _nowFactory();
-
-            public void SetNow(DateTimeOffset fakeTime) => _nowFactory = () => fakeTime;
-        }
+        public void SetNow(DateTimeOffset fakeTime) => _nowFactory = () => fakeTime;
     }
 }
