@@ -62,6 +62,9 @@
 * Remove unnecessary System.Data.SqlClient dependency
 * Update Npgsql dependency to 6.0.4
 
+## 8.0.1
+* Fix bug where `isCentralized` was not actually used - thanks [mts44]
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
@@ -71,4 +74,5 @@
 [knutsr]: https://github.com/knutsr
 [Laurianti]: https://github.com/Laurianti
 [mastersign]: https://github.com/mastersign
+[mts44]: https://github.com/mts44
 [zabulus]: https://github.com/zabulus
