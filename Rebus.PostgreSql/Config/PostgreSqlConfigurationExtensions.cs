@@ -115,7 +115,7 @@ public static class PostgreSqlConfigurationExtensions
     {
         var provider = new PostgresConnectionHelper(connectionString, additionalConnectionSetup);
 
-        StoreInPostgres(configurer, provider, tableName, automaticallyCreateTables);
+        StoreInPostgres(configurer, provider, tableName, isCentralized, automaticallyCreateTables);
     }
 
     /// <summary>
