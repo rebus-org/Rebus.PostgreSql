@@ -65,7 +65,9 @@ public static class PostgreSqlConfigurationExtensions
         configurer.Register(c =>
         {
             var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-            var sagaStorage = new PostgreSqlSagaStorage(connectionProvider, dataTableName, indexTableName, rebusLoggerFactory);
+            var serializer = c.Has<ISagaSerializer>() ? c.Get<ISagaSerializer>() : new DefaultSagaSerializer();
+
+            var sagaStorage = new PostgreSqlSagaStorage(connectionProvider, dataTableName, indexTableName, rebusLoggerFactory, serializer);
 
             if (automaticallyCreateTables)
             {
@@ -139,4 +141,14 @@ public static class PostgreSqlConfigurationExtensions
         });
     }
 
+    public static void UseSagaSerializer(this StandardConfigurer<ISagaStorage> configurer, ISagaSerializer serializer = null)
+    {
+        if (configurer == null) throw new ArgumentNullException(nameof(configurer));
+        if (serializer == null)
+        {
+            serializer = new DefaultSagaSerializer();
+        }
+
+        configurer.OtherService<ISagaSerializer>().Decorate((c) => serializer);
+    }
 }
