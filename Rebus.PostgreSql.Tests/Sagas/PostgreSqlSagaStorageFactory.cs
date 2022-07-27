@@ -15,7 +15,9 @@ public class PostgreSqlSagaStorageFactory : ISagaStorageFactory
 
     public ISagaStorage GetSagaStorage()
     {
-        var postgreSqlSagaStorage = new PostgreSqlSagaStorage(PostgreSqlTestHelper.ConnectionHelper, "saga_data", "saga_index", new ConsoleLoggerFactory(false));
+        var serializer = new DefaultSagaSerializer();
+        
+        var postgreSqlSagaStorage = new PostgreSqlSagaStorage(PostgreSqlTestHelper.ConnectionHelper, "saga_data", "saga_index", new ConsoleLoggerFactory(false), serializer);
         postgreSqlSagaStorage.EnsureTablesAreCreated();
         return postgreSqlSagaStorage;
     }
