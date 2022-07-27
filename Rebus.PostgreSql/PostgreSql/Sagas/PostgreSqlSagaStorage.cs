@@ -22,7 +22,7 @@ public class PostgreSqlSagaStorage : ISagaStorage
 {
     static readonly string IdPropertyName = Reflect.Path<ISagaData>(d => d.Id);
 
-    readonly ObjectSerializer _objectSerializer = new ObjectSerializer();
+    readonly ISagaSerializer _sagaSerializer;
     readonly IPostgresConnectionProvider _connectionHelper;
     readonly string _dataTableName;
     readonly string _indexTableName;
@@ -31,12 +31,13 @@ public class PostgreSqlSagaStorage : ISagaStorage
     /// <summary>
     /// Constructs the saga storage
     /// </summary>
-    public PostgreSqlSagaStorage(IPostgresConnectionProvider connectionHelper, string dataTableName, string indexTableName, IRebusLoggerFactory rebusLoggerFactory)
+    public PostgreSqlSagaStorage(IPostgresConnectionProvider connectionHelper, string dataTableName, string indexTableName, IRebusLoggerFactory rebusLoggerFactory, ISagaSerializer sagaSerializer)
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
         _dataTableName = dataTableName ?? throw new ArgumentNullException(nameof(dataTableName));
         _indexTableName = indexTableName ?? throw new ArgumentNullException(nameof(indexTableName));
+        _sagaSerializer = sagaSerializer;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSagaStorage>();
     }
 
@@ -148,7 +149,7 @@ SELECT s.""data""
 
                 try
                 {
-                    var sagaData = (ISagaData)_objectSerializer.Deserialize(data);
+                    var sagaData = (ISagaData)_sagaSerializer.Deserialize(data);
 
                     if (!sagaDataType.IsInstanceOfType(sagaData))
                     {
@@ -198,7 +199,7 @@ SELECT s.""data""
             {
                 command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
                 command.Parameters.Add("revision", NpgsqlDbType.Integer).Value = sagaData.Revision;
-                command.Parameters.Add("data", NpgsqlDbType.Bytea).Value = _objectSerializer.Serialize(sagaData);
+                command.Parameters.Add("data", NpgsqlDbType.Bytea).Value = _sagaSerializer.Serialize(sagaData);
 
                 command.CommandText =
                     $@"
@@ -263,7 +264,7 @@ DELETE FROM ""{_indexTableName}"" WHERE ""saga_id"" = @id;
                 command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
                 command.Parameters.Add("current_revision", NpgsqlDbType.Integer).Value = revisionToUpdate;
                 command.Parameters.Add("next_revision", NpgsqlDbType.Integer).Value = nextRevision;
-                command.Parameters.Add("data", NpgsqlDbType.Bytea).Value = _objectSerializer.Serialize(sagaData);
+                command.Parameters.Add("data", NpgsqlDbType.Bytea).Value = _sagaSerializer.Serialize(sagaData);
 
                 command.CommandText =
                     $@"
