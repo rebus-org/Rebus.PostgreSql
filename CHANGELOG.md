@@ -65,6 +65,11 @@
 ## 8.0.1
 * Fix bug where `isCentralized` was not actually used - thanks [mts44]
 
+## 8.1.0
+* Make saga data serializer configurable - thanks [mmdevterm]
+
+
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
@@ -74,5 +79,6 @@
 [knutsr]: https://github.com/knutsr
 [Laurianti]: https://github.com/Laurianti
 [mastersign]: https://github.com/mastersign
+[mmdevterm]: https://github.com/mmdevterm
 [mts44]: https://github.com/mts44
 [zabulus]: https://github.com/zabulus
