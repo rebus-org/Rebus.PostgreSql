@@ -17,7 +17,7 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
     const string UniqueKeyViolation = "23505";
 
     readonly IPostgresConnectionProvider _connectionHelper;
-    readonly string _tableName;
+    readonly TableName _tableName;
     readonly ILog _log;
 
     /// <summary>
@@ -29,7 +29,7 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+        _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
         IsCentralized = isCentralized;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSubscriptionStorage>();
     }

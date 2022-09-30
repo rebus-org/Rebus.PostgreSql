@@ -16,7 +16,7 @@ using Rebus.Serialization;
 namespace Rebus.PostgreSql.Sagas;
 
 /// <summary>
-/// Implementation of <see cref="ISagaStorage"/> that uses PostgreSQL to do its thing
+/// Implementation of <see cref="ISagaStorage"/> that uses PostgreSql to do its thing
 /// </summary>
 public class PostgreSqlSagaStorage : ISagaStorage
 {
@@ -24,8 +24,8 @@ public class PostgreSqlSagaStorage : ISagaStorage
 
     readonly ISagaSerializer _sagaSerializer;
     readonly IPostgresConnectionProvider _connectionHelper;
-    readonly string _dataTableName;
-    readonly string _indexTableName;
+    readonly TableName _dataTableName;
+    readonly TableName _indexTableName;
     readonly ILog _log;
 
     /// <summary>
@@ -35,8 +35,8 @@ public class PostgreSqlSagaStorage : ISagaStorage
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _dataTableName = dataTableName ?? throw new ArgumentNullException(nameof(dataTableName));
-        _indexTableName = indexTableName ?? throw new ArgumentNullException(nameof(indexTableName));
+        _dataTableName = new TableName(dataTableName ?? throw new ArgumentNullException(nameof(dataTableName)));
+        _indexTableName = new TableName(indexTableName ?? throw new ArgumentNullException(nameof(indexTableName)));
         _sagaSerializer = sagaSerializer;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSagaStorage>();
     }

@@ -14,14 +14,14 @@ using Rebus.Timeouts;
 namespace Rebus.PostgreSql.Timeouts;
 
 /// <summary>
-/// Implementation of <see cref="ITimeoutManager"/> that uses PostgreSQL to do its thing. Can be used safely by multiple processes competing
+/// Implementation of <see cref="ITimeoutManager"/> that uses PostgreSql to do its thing. Can be used safely by multiple processes competing
 /// over the same table of timeouts because row-level locking is used when querying for due timeouts.
 /// </summary>
 public class PostgreSqlTimeoutManager : ITimeoutManager
 {
     readonly DictionarySerializer _dictionarySerializer = new();
     readonly IPostgresConnectionProvider _connectionHelper;
-    readonly string _tableName;
+    readonly TableName _tableName;
     readonly IRebusTime _rebusTime;
     readonly ILog _log;
 
@@ -32,7 +32,7 @@ public class PostgreSqlTimeoutManager : ITimeoutManager
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+        _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
         _rebusTime = rebusTime ?? throw new ArgumentNullException(nameof(rebusTime));
         _log = rebusLoggerFactory.GetLogger<PostgreSqlTimeoutManager>();
     }
