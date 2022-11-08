@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NpgsqlTypes;
 using Rebus.Auditing.Sagas;
@@ -22,12 +23,12 @@ public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
     /// <summary>
     /// Constructs the storage
     /// </summary>
-    public PostgreSqlSagaSnapshotStorage(IPostgresConnectionProvider connectionHelper, string tableName)
+    public PostgreSqlSagaSnapshotStorage(IPostgresConnectionProvider connectionHelper, string tableName, string schemaName = null)
     {
-        if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
         if (tableName == null) throw new ArgumentNullException(nameof(tableName));
-        _connectionHelper = connectionHelper;
-        _tableName = new TableName(tableName);
+        
+        _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
+        _tableName = new TableName(schemaName ?? TableName.DefaultSchemaName, tableName);
     }
 
     /// <summary>
@@ -72,6 +73,18 @@ INSERT
                 var tableNames = connection.GetTableNames();
 
                 if (tableNames.Contains(_tableName)) return;
+
+                var schemaNames = connection.GetSchemas();
+
+                if (!schemaNames.Contains(_tableName.Schema))
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
+                        
+                        command.ExecuteNonQuery();
+                    }
+                }
 
                 using (var command = connection.CreateCommand())
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
@@ -25,11 +26,11 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
     /// If <paramref name="isCentralized"/> is true, subscribing/unsubscribing will be short-circuited by manipulating
     /// subscriptions directly, instead of requesting via messages
     /// </summary>
-    public PostgreSqlSubscriptionStorage(IPostgresConnectionProvider connectionHelper, string tableName, bool isCentralized, IRebusLoggerFactory rebusLoggerFactory)
+    public PostgreSqlSubscriptionStorage(IPostgresConnectionProvider connectionHelper, string tableName, bool isCentralized, IRebusLoggerFactory rebusLoggerFactory, string schemaName = null)
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
+        _tableName = new TableName(schemaName ?? TableName.DefaultSchemaName, tableName ?? throw new ArgumentNullException(nameof(tableName)));
         IsCentralized = isCentralized;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSubscriptionStorage>();
     }
@@ -48,19 +49,33 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
             if (tableNames.Contains(_tableName)) return;
 
             _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+            
+            var schemaNames = connection.GetSchemas();
 
-            using var command = connection.CreateCommand();
-
-            command.CommandText =
-                $@"
+            if (!schemaNames.Contains(_tableName.Schema))
+            {
+                _log.Info("Schema {schemaName} does not exist - it will be created now", _tableName.Schema);
+                
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+            
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = $@"
 CREATE TABLE {_tableName} (
 	""topic"" VARCHAR(200) NOT NULL,
 	""address"" VARCHAR(200) NOT NULL,
 	PRIMARY KEY (""topic"", ""address"")
 );
 ";
-            command.ExecuteNonQuery();
-
+                command.ExecuteNonQuery();
+            }
+            
             await connection.Complete();
         });
     }

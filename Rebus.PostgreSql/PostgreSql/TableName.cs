@@ -9,6 +9,11 @@ namespace Rebus.PostgreSql;
 public class TableName : IEquatable<TableName>
 {
     /// <summary>
+    /// Default schema name for postgres
+    /// </summary>
+    public const string DefaultSchemaName = "public";
+    
+    /// <summary>
     /// Gets the schema name of the table
     /// </summary>
     public string Schema { get; }
@@ -24,7 +29,7 @@ public class TableName : IEquatable<TableName>
     /// Creates a <see cref="TableName"/> object with the given schema and table names
     /// </summary>
     public TableName(string tableName)
-        : this(string.Empty, tableName)
+        : this(DefaultSchemaName, tableName)
     {
     }
     
