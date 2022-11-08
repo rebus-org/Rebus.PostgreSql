@@ -8,7 +8,7 @@ namespace Rebus.PostgreSql.Tests;
 public class PostgreSqlTestHelper
 {
     const string TableDoesNotExist = "42P01";
-    private const string SchemaDoesNotExist = "3F000";
+    const string SchemaDoesNotExist = "3F000";
     static readonly IPostgresConnectionProvider PostgresConnectionHelper = new PostgresConnectionHelper(ConnectionString);
 
     public static string DatabaseName => $"rebus2_test_{TestConfig.Suffix}".TrimEnd('_');
