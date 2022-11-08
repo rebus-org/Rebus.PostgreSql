@@ -154,7 +154,7 @@ VALUES
                 using (var selectCommand = connection.Connection.CreateCommand())
                 {
                     selectCommand.CommandText = $@"
-DELETE from {_tableName} 
+DELETE from {_tableName}
 where id = 
 (
     select id from {_tableName}
@@ -248,7 +248,7 @@ body
             }
             catch (Exception exception)
             {
-                throw new RebusApplicationException(exception, $"Error attempting to initialize SQL transport schema with mesages table [dbo].[{_tableName}]");
+                throw new RebusApplicationException(exception, $"Error attempting to initialize SQL transport schema with messages table {_tableName}");
             }
         }
 
@@ -279,14 +279,14 @@ CREATE TABLE {_tableName}
     PRIMARY KEY (recipient, priority, id)
 );
 ----
-CREATE INDEX idx_receive_{_tableName} ON {_tableName}
+CREATE INDEX ""idx_receive_{_tableName.Name}"" ON {_tableName}
 (
 	recipient ASC,
     expiration ASC,
     visible ASC
 );
 ----
-CREATE INDEX idx_dequeue_{_tableName} ON {_tableName}
+CREATE INDEX ""idx_dequeue_{_tableName.Name}"" ON {_tableName}
 (
     priority DESC,
     visible ASC,

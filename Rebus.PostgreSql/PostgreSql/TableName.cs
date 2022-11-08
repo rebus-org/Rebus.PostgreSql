@@ -111,8 +111,8 @@ public class TableName : IEquatable<TableName>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return string.Equals(Schema, other.Schema, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(Schema, other.Schema, StringComparison.Ordinal)
+               && string.Equals(Name, other.Name, StringComparison.Ordinal);
     }
 
     /// <inheritdoc />
@@ -129,7 +129,7 @@ public class TableName : IEquatable<TableName>
     {
         unchecked
         {
-            return (Schema.ToLowerInvariant().GetHashCode() * 397) ^ Name.ToLowerInvariant().GetHashCode();
+            return (Schema.GetHashCode() * 397) ^ Name.GetHashCode();
         }
     }
 

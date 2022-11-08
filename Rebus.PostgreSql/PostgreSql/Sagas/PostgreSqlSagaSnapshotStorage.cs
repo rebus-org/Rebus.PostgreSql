@@ -43,7 +43,7 @@ public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
                     $@"
 
 INSERT
-    INTO ""{_tableName}"" (""id"", ""revision"", ""data"", ""metadata"")
+    INTO {_tableName} (""id"", ""revision"", ""data"", ""metadata"")
     VALUES (@id, @revision, @data, @metadata);
 
 ";
@@ -77,7 +77,7 @@ INSERT
                 {
                     command.CommandText =
                         $@"
-CREATE TABLE ""{_tableName}"" (
+CREATE TABLE {_tableName} (
 	""id"" UUID NOT NULL,
 	""revision"" INTEGER NOT NULL,
 	""metadata"" JSONB NOT NULL,

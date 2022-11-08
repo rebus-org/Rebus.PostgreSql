@@ -77,7 +77,7 @@ public class PostgreSqlSagaStorage : ISagaStorage
             {
                 command.CommandText =
                     $@"
-CREATE TABLE ""{_dataTableName}"" (
+CREATE TABLE {_dataTableName} (
 	""id"" UUID NOT NULL,
 	""revision"" INTEGER NOT NULL,
 	""data"" BYTEA NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE ""{_dataTableName}"" (
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = $@"
-CREATE TABLE ""{_indexTableName}"" (
+CREATE TABLE {_indexTableName} (
 	""saga_type"" TEXT NOT NULL,
 	""key"" TEXT NOT NULL,
 	""value"" TEXT NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE ""{_indexTableName}"" (
 	PRIMARY KEY (""key"", ""value"", ""saga_type"")
 );
 
-CREATE INDEX ON ""{_indexTableName}"" (""saga_id"");
+CREATE INDEX ON {_indexTableName} (""saga_id"");
 ";
 
                 command.ExecuteNonQuery();
@@ -123,7 +123,7 @@ CREATE INDEX ON ""{_indexTableName}"" (""saga_id"");
                 {
                     command.CommandText = $@"
 SELECT s.""data"" 
-    FROM ""{_dataTableName}"" s 
+    FROM {_dataTableName} s 
     WHERE s.""id"" = @id
 ";
                     command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = ToGuid(propertyValue);
@@ -133,8 +133,8 @@ SELECT s.""data""
                     command.CommandText =
                         $@"
 SELECT s.""data"" 
-    FROM ""{_dataTableName}"" s
-    JOIN ""{_indexTableName}"" i on s.id = i.saga_id 
+    FROM {_dataTableName} s
+    JOIN {_indexTableName} i on s.id = i.saga_id 
     WHERE i.""saga_type"" = @saga_type AND i.""key"" = @key AND i.value = @value;
 ";
 
@@ -205,7 +205,7 @@ SELECT s.""data""
                     $@"
 
 INSERT 
-    INTO ""{_dataTableName}"" (""id"", ""revision"", ""data"") 
+    INTO {_dataTableName} (""id"", ""revision"", ""data"") 
     VALUES (@id, @revision, @data);
 
 ";
@@ -251,7 +251,7 @@ INSERT
             {
                 command.CommandText = $@"
 
-DELETE FROM ""{_indexTableName}"" WHERE ""saga_id"" = @id;
+DELETE FROM {_indexTableName} WHERE ""saga_id"" = @id;
 
 ";
                 command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = sagaData.Id;
@@ -269,7 +269,7 @@ DELETE FROM ""{_indexTableName}"" WHERE ""saga_id"" = @id;
                 command.CommandText =
                     $@"
 
-UPDATE ""{_dataTableName}"" 
+UPDATE {_dataTableName} 
     SET ""data"" = @data, ""revision"" = @next_revision 
     WHERE ""id"" = @id AND ""revision"" = @current_revision;
 
@@ -307,7 +307,7 @@ UPDATE ""{_dataTableName}""
                     $@"
 
 DELETE 
-    FROM ""{_dataTableName}"" 
+    FROM {_dataTableName} 
     WHERE ""id"" = @id AND ""revision"" = @current_revision;
 
 ";
@@ -329,7 +329,7 @@ DELETE
                     $@"
 
 DELETE 
-    FROM ""{_indexTableName}"" 
+    FROM {_indexTableName} 
     WHERE ""saga_id"" = @id
 
 ";
@@ -366,7 +366,7 @@ DELETE
                     $@"
 
 INSERT
-    INTO ""{_indexTableName}"" (""saga_type"", ""key"", ""value"", ""saga_id"") 
+    INTO {_indexTableName} (""saga_type"", ""key"", ""value"", ""saga_id"") 
     VALUES (@saga_type, {a.PropertyNameParameter}, {a.PropertyValueParameter}, @saga_id)
 
 ");
