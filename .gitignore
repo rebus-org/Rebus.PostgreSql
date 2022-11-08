@@ -18,6 +18,7 @@ _ReSharper.*
 ~$*
 .vs
 .vs/*
+.idea/
 _NCrunch_*
 *.user
 *.backup

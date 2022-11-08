@@ -16,19 +16,45 @@ public class PostgreSqlTestHelper
 
     public static IPostgresConnectionProvider ConnectionHelper => PostgresConnectionHelper;
 
+    public static void DropAllTables()
+    {
+        AsyncHelpers.RunSync(async () =>
+        {
+            using var connection = await PostgresConnectionHelper.GetConnection();
+            var tables = connection.GetTableNames();
+
+            foreach (var table in tables)
+            {
+                try
+                {
+                    await using var command = connection.CreateCommand();
+                    command.CommandText = $@"DROP TABLE {table}";
+                    command.ExecuteNonQuery();
+
+                    Console.WriteLine("Dropped postgres table '{0}'", table);
+                }
+                catch (PostgresException exception) when (exception.SqlState == TableDoesNotExist)
+                {
+                }
+            }
+
+            await connection.Complete();
+        });
+    }
+
     public static void DropTable(string tableName)
     {
         AsyncHelpers.RunSync(async () =>
         {
             using var connection = await PostgresConnectionHelper.GetConnection();
 
-            await using var comand = connection.CreateCommand();
+            await using var command = connection.CreateCommand();
 
-            comand.CommandText = $@"drop table ""{tableName}"";";
+            command.CommandText = $@"drop table ""{tableName}"";";
 
             try
             {
-                comand.ExecuteNonQuery();
+                command.ExecuteNonQuery();
 
                 Console.WriteLine("Dropped postgres table '{0}'", tableName);
             }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NpgsqlTypes;
 using Rebus.Auditing.Sagas;
-using Rebus.Extensions;
 using Rebus.Internals;
 using Rebus.Sagas;
 using Rebus.Serialization;
@@ -11,14 +10,14 @@ using Rebus.Serialization;
 namespace Rebus.PostgreSql.Sagas;
 
 /// <summary>
-/// Implementation of <see cref="ISagaSnapshotStorage"/> that uses PostgreSQL to store the snapshots
+/// Implementation of <see cref="ISagaSnapshotStorage"/> that uses PostgreSql to store the snapshots
 /// </summary>
 public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
 {
     readonly ObjectSerializer _objectSerializer = new ObjectSerializer();
     readonly DictionarySerializer _dictionarySerializer = new DictionarySerializer();
     readonly IPostgresConnectionProvider _connectionHelper;
-    readonly string _tableName;
+    readonly TableName _tableName;
 
     /// <summary>
     /// Constructs the storage
@@ -28,7 +27,7 @@ public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
         if (connectionHelper == null) throw new ArgumentNullException(nameof(connectionHelper));
         if (tableName == null) throw new ArgumentNullException(nameof(tableName));
         _connectionHelper = connectionHelper;
-        _tableName = tableName;
+        _tableName = new TableName(tableName);
     }
 
     /// <summary>
@@ -44,7 +43,7 @@ public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
                     $@"
 
 INSERT
-    INTO ""{_tableName}"" (""id"", ""revision"", ""data"", ""metadata"")
+    INTO {_tableName} (""id"", ""revision"", ""data"", ""metadata"")
     VALUES (@id, @revision, @data, @metadata);
 
 ";
@@ -78,7 +77,7 @@ INSERT
                 {
                     command.CommandText =
                         $@"
-CREATE TABLE ""{_tableName}"" (
+CREATE TABLE {_tableName} (
 	""id"" UUID NOT NULL,
 	""revision"" INTEGER NOT NULL,
 	""metadata"" JSONB NOT NULL,

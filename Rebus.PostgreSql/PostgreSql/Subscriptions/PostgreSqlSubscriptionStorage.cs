@@ -17,7 +17,7 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
     const string UniqueKeyViolation = "23505";
 
     readonly IPostgresConnectionProvider _connectionHelper;
-    readonly string _tableName;
+    readonly TableName _tableName;
     readonly ILog _log;
 
     /// <summary>
@@ -29,7 +29,7 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+        _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
         IsCentralized = isCentralized;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSubscriptionStorage>();
     }
@@ -53,7 +53,7 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
 
             command.CommandText =
                 $@"
-CREATE TABLE ""{_tableName}"" (
+CREATE TABLE {_tableName} (
 	""topic"" VARCHAR(200) NOT NULL,
 	""address"" VARCHAR(200) NOT NULL,
 	PRIMARY KEY (""topic"", ""address"")
@@ -74,7 +74,7 @@ CREATE TABLE ""{_tableName}"" (
 
         using var command = connection.CreateCommand();
 
-        command.CommandText = $@"select ""address"" from ""{_tableName}"" where ""topic"" = @topic";
+        command.CommandText = $@"select ""address"" from {_tableName} where ""topic"" = @topic";
         command.Parameters.AddWithValue("topic", NpgsqlDbType.Text, topic);
 
         var endpoints = new List<string>();
@@ -98,7 +98,7 @@ CREATE TABLE ""{_tableName}"" (
         
         using var command = connection.CreateCommand();
         
-        command.CommandText = $@"insert into ""{_tableName}"" (""topic"", ""address"") values (@topic, @address)";
+        command.CommandText = $@"insert into {_tableName} (""topic"", ""address"") values (@topic, @address)";
 
         command.Parameters.AddWithValue("topic", NpgsqlDbType.Text, topic);
         command.Parameters.AddWithValue("address", NpgsqlDbType.Text, subscriberAddress);
@@ -124,7 +124,7 @@ CREATE TABLE ""{_tableName}"" (
 
         using var command = connection.CreateCommand();
         
-        command.CommandText = $@"delete from ""{_tableName}"" where ""topic"" = @topic and ""address"" = @address;";
+        command.CommandText = $@"delete from {_tableName} where ""topic"" = @topic and ""address"" = @address;";
 
         command.Parameters.AddWithValue("topic", NpgsqlDbType.Text, topic);
         command.Parameters.AddWithValue("address", NpgsqlDbType.Text, subscriberAddress);

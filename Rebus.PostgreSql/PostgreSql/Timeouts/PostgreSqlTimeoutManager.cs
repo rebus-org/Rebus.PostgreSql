@@ -14,14 +14,14 @@ using Rebus.Timeouts;
 namespace Rebus.PostgreSql.Timeouts;
 
 /// <summary>
-/// Implementation of <see cref="ITimeoutManager"/> that uses PostgreSQL to do its thing. Can be used safely by multiple processes competing
+/// Implementation of <see cref="ITimeoutManager"/> that uses PostgreSql to do its thing. Can be used safely by multiple processes competing
 /// over the same table of timeouts because row-level locking is used when querying for due timeouts.
 /// </summary>
 public class PostgreSqlTimeoutManager : ITimeoutManager
 {
     readonly DictionarySerializer _dictionarySerializer = new();
     readonly IPostgresConnectionProvider _connectionHelper;
-    readonly string _tableName;
+    readonly TableName _tableName;
     readonly IRebusTime _rebusTime;
     readonly ILog _log;
 
@@ -32,7 +32,7 @@ public class PostgreSqlTimeoutManager : ITimeoutManager
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+        _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
         _rebusTime = rebusTime ?? throw new ArgumentNullException(nameof(rebusTime));
         _log = rebusLoggerFactory.GetLogger<PostgreSqlTimeoutManager>();
     }
@@ -46,7 +46,7 @@ public class PostgreSqlTimeoutManager : ITimeoutManager
 
         using var command = connection.CreateCommand();
         
-        command.CommandText = $@"INSERT INTO ""{_tableName}"" (""due_time"", ""headers"", ""body"") VALUES (@due_time, @headers, @body)";
+        command.CommandText = $@"INSERT INTO {_tableName} (""due_time"", ""headers"", ""body"") VALUES (@due_time, @headers, @body)";
 
         command.Parameters.Add("due_time", NpgsqlDbType.Timestamp).Value = approximateDueTime.ToUniversalTime().DateTime;
         command.Parameters.Add("headers", NpgsqlDbType.Text).Value = _dictionarySerializer.SerializeToString(headers);
@@ -76,7 +76,7 @@ SELECT
     ""headers"", 
     ""body"" 
 
-FROM ""{_tableName}"" 
+FROM {_tableName} 
 
 WHERE ""due_time"" <= @current_time 
 
@@ -99,7 +99,7 @@ FOR UPDATE;
                 dueMessages.Add(new DueMessage(headers, body, async () =>
                 {
                     using var deleteCommand = connection.CreateCommand();
-                    deleteCommand.CommandText = $@"DELETE FROM ""{_tableName}"" WHERE ""id"" = @id";
+                    deleteCommand.CommandText = $@"DELETE FROM {_tableName} WHERE ""id"" = @id";
                     deleteCommand.Parameters.Add("id", NpgsqlDbType.Bigint).Value = id;
                     await deleteCommand.ExecuteNonQueryAsync();
                 }));
@@ -140,7 +140,7 @@ FOR UPDATE;
             {
                 command.CommandText =
                     $@"
-CREATE TABLE ""{_tableName}"" (
+CREATE TABLE {_tableName} (
     ""id"" BIGSERIAL NOT NULL,
     ""due_time"" TIMESTAMP WITH TIME ZONE NOT NULL,
     ""headers"" TEXT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE ""{_tableName}"" (
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = $@"
-CREATE INDEX ON ""{_tableName}"" (""due_time"");
+CREATE INDEX ON {_tableName} (""due_time"");
 ";
 
                 command.ExecuteNonQuery();

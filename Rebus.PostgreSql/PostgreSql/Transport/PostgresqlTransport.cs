@@ -21,16 +21,16 @@ using Rebus.Time;
 namespace Rebus.PostgreSql.Transport
 {
     /// <summary>
-    /// Implementation of <see cref="ITransport"/> that uses PostgreSQL to move messages around
+    /// Implementation of <see cref="ITransport"/> that uses PostgreSql to move messages around
     /// </summary>
     public class PostgreSqlTransport : ITransport, IInitializable, IDisposable
     {
-        const string CurrentConnectionKey = "postgresql-transport-current-connection";
+        const string CurrentConnectionKey = "PostgreSql-transport-current-connection";
 
         static readonly HeaderSerializer HeaderSerializer = new();
 
         readonly IPostgresConnectionProvider _connectionHelper;
-        readonly string _tableName;
+        readonly TableName _tableName;
         readonly string _inputQueueName;
         readonly IRebusTime _rebusTime;
         readonly AsyncBottleneck _receiveBottleneck = new(20);
@@ -59,7 +59,7 @@ namespace Rebus.PostgreSql.Transport
 
             _log = rebusLoggerFactory.GetLogger<PostgreSqlTransport>();
             _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-            _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+            _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
             _inputQueueName = inputQueueName;
             _rebusTime = rebusTime;
 
@@ -154,7 +154,7 @@ VALUES
                 using (var selectCommand = connection.Connection.CreateCommand())
                 {
                     selectCommand.CommandText = $@"
-DELETE from {_tableName} 
+DELETE from {_tableName}
 where id = 
 (
     select id from {_tableName}
@@ -248,7 +248,7 @@ body
             }
             catch (Exception exception)
             {
-                throw new RebusApplicationException(exception, $"Error attempting to initialize SQL transport schema with mesages table [dbo].[{_tableName}]");
+                throw new RebusApplicationException(exception, $"Error attempting to initialize SQL transport schema with messages table {_tableName}");
             }
         }
 
@@ -258,7 +258,7 @@ body
             
             var tableNames = connection.GetTableNames();
 
-            if (tableNames.Contains(_tableName, StringComparer.OrdinalIgnoreCase))
+            if (tableNames.Contains(_tableName))
             {
                 _log.Info("Database already contains a table named {tableName} - will not create anything", _tableName);
                 return;
@@ -279,14 +279,14 @@ CREATE TABLE {_tableName}
     PRIMARY KEY (recipient, priority, id)
 );
 ----
-CREATE INDEX idx_receive_{_tableName} ON {_tableName}
+CREATE INDEX ""idx_receive_{_tableName.Name}"" ON {_tableName}
 (
 	recipient ASC,
     expiration ASC,
     visible ASC
 );
 ----
-CREATE INDEX idx_dequeue_{_tableName} ON {_tableName}
+CREATE INDEX ""idx_dequeue_{_tableName.Name}"" ON {_tableName}
 (
     priority DESC,
     visible ASC,

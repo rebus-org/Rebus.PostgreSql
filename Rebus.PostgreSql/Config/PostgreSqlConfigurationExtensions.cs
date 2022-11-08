@@ -20,7 +20,7 @@ namespace Rebus.Config;
 public static class PostgreSqlConfigurationExtensions
 {
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store saga data snapshots, using the specified table to store the data
+    /// Configures Rebus to use PostgreSql to store saga data snapshots, using the specified table to store the data
     /// </summary>
     public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer, string connectionString, string tableName, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
     {
@@ -30,7 +30,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store saga data snapshots, using the specified table to store the data
+    /// Configures Rebus to use PostgreSql to store saga data snapshots, using the specified table to store the data
     /// </summary>
     public static void StoreInPostgres(this StandardConfigurer<ISagaSnapshotStorage> configurer, IPostgresConnectionProvider connectionProvider, string tableName, bool automaticallyCreateTables = true)
     {
@@ -48,7 +48,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store sagas, using the tables specified to store data and indexed properties respectively.
+    /// Configures Rebus to use PostgreSql to store sagas, using the tables specified to store data and indexed properties respectively.
     /// </summary>
     public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer, string connectionString, string dataTableName, string indexTableName, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
     {
@@ -58,7 +58,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store sagas, using the tables specified to store data and indexed properties respectively.
+    /// Configures Rebus to use PostgreSql to store sagas, using the tables specified to store data and indexed properties respectively.
     /// </summary>
     public static void StoreInPostgres(this StandardConfigurer<ISagaStorage> configurer, IPostgresConnectionProvider connectionProvider, string dataTableName, string indexTableName, bool automaticallyCreateTables = true)
     {
@@ -79,7 +79,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store timeouts.
+    /// Configures Rebus to use PostgreSql to store timeouts.
     /// </summary>
     public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, string connectionString, string tableName, bool automaticallyCreateTables = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
     {
@@ -89,7 +89,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store timeouts.
+    /// Configures Rebus to use PostgreSql to store timeouts.
     /// </summary>
     public static void StoreInPostgres(this StandardConfigurer<ITimeoutManager> configurer, IPostgresConnectionProvider connectionProvider, string tableName, bool automaticallyCreateTables = true)
     {
@@ -109,7 +109,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store subscriptions. Use <paramref name="isCentralized"/> = true to indicate whether it's OK to short-circuit
+    /// Configures Rebus to use PostgreSql to store subscriptions. Use <paramref name="isCentralized"/> = true to indicate whether it's OK to short-circuit
     /// subscribing and unsubscribing by manipulating the subscription directly from the subscriber or just let it default to false to preserve the
     /// default behavior.
     /// </summary>
@@ -121,7 +121,7 @@ public static class PostgreSqlConfigurationExtensions
     }
 
     /// <summary>
-    /// Configures Rebus to use PostgreSQL to store subscriptions. Use <paramref name="isCentralized"/> = true to indicate whether it's OK to short-circuit
+    /// Configures Rebus to use PostgreSql to store subscriptions. Use <paramref name="isCentralized"/> = true to indicate whether it's OK to short-circuit
     /// subscribing and unsubscribing by manipulating the subscription directly from the subscriber or just let it default to false to preserve the
     /// default behavior.
     /// </summary>
