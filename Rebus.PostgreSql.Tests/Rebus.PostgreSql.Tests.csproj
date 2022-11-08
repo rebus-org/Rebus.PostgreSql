@@ -4,9 +4,6 @@
 		<OutputType>Library</OutputType>
 		<TargetFrameworks>net6.0</TargetFrameworks>
 	</PropertyGroup>
-	<ItemGroup>
-	  <Compile Include="..\Rebus.PostgreSql\Internals\AsyncHelpers.cs" Link="AsyncHelpers.cs" />
-	</ItemGroup>
 	
 	<ItemGroup>
 		<ProjectReference Include="..\Rebus.PostgreSql\Rebus.PostgreSql.csproj" />
