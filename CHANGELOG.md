@@ -68,8 +68,9 @@
 ## 8.1.0
 * Make saga data serializer configurable - thanks [mmdevterm]
 
-## 8.2.0-b1
+## 8.2.0-b2
 * Add outbox - thanks [matt-psaltis]
+* Add schema support - thanks [patrick11994]
 
 ---
 
@@ -83,4 +84,5 @@
 [matt-psaltis]: https://github.com/matt-psaltis
 [mmdevterm]: https://github.com/mmdevterm
 [mts44]: https://github.com/mts44
+[patrick11994]: https://github.com/patrick11994
 [zabulus]: https://github.com/zabulus
