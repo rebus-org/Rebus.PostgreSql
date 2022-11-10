@@ -52,14 +52,14 @@ namespace Rebus.PostgreSql.Transport
         /// <summary>
         /// Creates the transport :)
         /// </summary>
-        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime, TimeSpan? expiredMessagesCleanupInterval = null)
+        public PostgreSqlTransport(IPostgresConnectionProvider connectionHelper, string tableName, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, IRebusTime rebusTime, TimeSpan? expiredMessagesCleanupInterval = null, string schemaName = null)
         {
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
             if (asyncTaskFactory == null) throw new ArgumentNullException(nameof(asyncTaskFactory));
 
             _log = rebusLoggerFactory.GetLogger<PostgreSqlTransport>();
             _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-            _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
+            _tableName = new TableName(schemaName ?? TableName.DefaultSchemaName, tableName ?? throw new ArgumentNullException(nameof(tableName)));
             _inputQueueName = inputQueueName;
             _rebusTime = rebusTime;
 
@@ -266,6 +266,20 @@ body
 
             _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
 
+            var schemaNames = connection.GetSchemas();
+
+            if (!schemaNames.Contains(_tableName.Schema))
+            {
+                _log.Info("Schema {schemaName} does not exist - it will be created now", _tableName.Schema);
+                
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+            
             ExecuteCommands(connection, $@"
 CREATE TABLE {_tableName}
 (

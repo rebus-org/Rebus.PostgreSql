@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NpgsqlTypes;
 using Rebus.Internals;
@@ -28,11 +29,11 @@ public class PostgreSqlTimeoutManager : ITimeoutManager
     /// <summary>
     /// Constructs the timeout manager
     /// </summary>
-    public PostgreSqlTimeoutManager(IPostgresConnectionProvider connectionHelper, string tableName, IRebusLoggerFactory rebusLoggerFactory, IRebusTime rebusTime)
+    public PostgreSqlTimeoutManager(IPostgresConnectionProvider connectionHelper, string tableName, IRebusLoggerFactory rebusLoggerFactory, IRebusTime rebusTime, string schemaName = null)
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _tableName = new TableName(tableName ?? throw new ArgumentNullException(nameof(tableName)));
+        _tableName = new TableName(schemaName ?? TableName.DefaultSchemaName, tableName ?? throw new ArgumentNullException(nameof(tableName)));
         _rebusTime = rebusTime ?? throw new ArgumentNullException(nameof(rebusTime));
         _log = rebusLoggerFactory.GetLogger<PostgreSqlTimeoutManager>();
     }
@@ -135,7 +136,21 @@ FOR UPDATE;
             }
 
             _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
+            
+            var schemaNames = connection.GetSchemas();
 
+            if (!schemaNames.Contains(_tableName.Schema))
+            {
+                _log.Info("Schema {schemaName} does not exist - it will be created now", _tableName.Schema);
+                
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+            
             using (var command = connection.CreateCommand())
             {
                 command.CommandText =

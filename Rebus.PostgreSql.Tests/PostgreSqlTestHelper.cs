@@ -8,6 +8,7 @@ namespace Rebus.PostgreSql.Tests;
 public class PostgreSqlTestHelper
 {
     const string TableDoesNotExist = "42P01";
+    const string SchemaDoesNotExist = "3F000";
     static readonly IPostgresConnectionProvider PostgresConnectionHelper = new PostgresConnectionHelper(ConnectionString);
 
     public static string DatabaseName => $"rebus2_test_{TestConfig.Suffix}".TrimEnd('_');
@@ -42,15 +43,21 @@ public class PostgreSqlTestHelper
         });
     }
 
-    public static void DropTable(string tableName)
+    public static void DropTable(string table)
+    {
+        DropTable(string.Empty, table);
+    }
+    
+    public static void DropTable(string schema, string table)
     {
         AsyncHelpers.RunSync(async () =>
         {
+            var tableName = new TableName(schema, table);
             using var connection = await PostgresConnectionHelper.GetConnection();
 
             await using var command = connection.CreateCommand();
 
-            command.CommandText = $@"drop table ""{tableName}"";";
+            command.CommandText = $"drop table {tableName};";
 
             try
             {
@@ -58,7 +65,7 @@ public class PostgreSqlTestHelper
 
                 Console.WriteLine("Dropped postgres table '{0}'", tableName);
             }
-            catch (PostgresException exception) when (exception.SqlState == TableDoesNotExist)
+            catch (PostgresException exception) when (exception.SqlState is TableDoesNotExist or SchemaDoesNotExist)
             {
             }
 

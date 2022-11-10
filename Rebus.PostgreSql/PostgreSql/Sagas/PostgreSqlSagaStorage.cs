@@ -31,12 +31,12 @@ public class PostgreSqlSagaStorage : ISagaStorage
     /// <summary>
     /// Constructs the saga storage
     /// </summary>
-    public PostgreSqlSagaStorage(IPostgresConnectionProvider connectionHelper, string dataTableName, string indexTableName, IRebusLoggerFactory rebusLoggerFactory, ISagaSerializer sagaSerializer)
+    public PostgreSqlSagaStorage(IPostgresConnectionProvider connectionHelper, string dataTableName, string indexTableName, IRebusLoggerFactory rebusLoggerFactory, ISagaSerializer sagaSerializer, string schemaName = null)
     {
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
-        _dataTableName = new TableName(dataTableName ?? throw new ArgumentNullException(nameof(dataTableName)));
-        _indexTableName = new TableName(indexTableName ?? throw new ArgumentNullException(nameof(indexTableName)));
+        _dataTableName = new TableName(schemaName ?? TableName.DefaultSchemaName, dataTableName ?? throw new ArgumentNullException(nameof(dataTableName)));
+        _indexTableName = new TableName(schemaName, indexTableName ?? throw new ArgumentNullException(nameof(indexTableName)));
         _sagaSerializer = sagaSerializer;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSagaStorage>();
     }
@@ -73,6 +73,20 @@ public class PostgreSqlSagaStorage : ISagaStorage
 
             _log.Info("Saga tables {tableName} (data) and {tableName} (index) do not exist - they will be created now", _dataTableName, _indexTableName);
 
+            var schemaNames = connection.GetSchemas();
+
+            if (!schemaNames.Contains(_dataTableName.Schema))
+            {
+                _log.Info("Schema {schemaName} does not exist - it will be created now", _dataTableName.Schema);
+                
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = $@"CREATE SCHEMA ""{_dataTableName.Schema}"";";
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+            
             using (var command = connection.CreateCommand())
             {
                 command.CommandText =

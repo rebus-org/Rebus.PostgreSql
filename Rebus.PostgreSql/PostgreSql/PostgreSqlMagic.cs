@@ -30,12 +30,44 @@ static class PostgreSqlMagic
         
         while (reader.Read())
         {
+            var schemaName = reader["table_schema"].ToString();
             var tableName = reader["table_name"].ToString();
 
-            tableNames.Add(new TableName(tableName));
+            tableNames.Add(new TableName(schemaName, tableName));
         }
 
         return tableNames;
+    }
+    
+    public static List<string> GetSchemas(this PostgresConnection connection)
+    {
+        using var command = connection.CreateCommand();
+        return GetSchemas(command);
+    }
+
+    public static List<string> GetSchemas(this NpgsqlConnection connection, NpgsqlTransaction transaction)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        
+        return GetSchemas(command);
+    }
+
+    private static List<string> GetSchemas(NpgsqlCommand command)
+    {
+        var schemaNames = new List<string>();
+        command.CommandText = "SELECT schema_name FROM information_schema.schemata;";
+
+        using var reader = command.ExecuteReader();
+        
+        while (reader.Read())
+        {
+            var schemaName = reader["schema_name"].ToString();
+
+            schemaNames.Add(schemaName);
+        }
+
+        return schemaNames;
     }
     
     /// <summary>

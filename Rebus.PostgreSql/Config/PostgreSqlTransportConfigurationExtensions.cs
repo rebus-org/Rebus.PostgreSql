@@ -57,14 +57,14 @@ public static class PostgreSqlTransportConfigurationExtensions
         OneWayClientBackdoor.ConfigureOneWayClient(configurer);
     }
 
-    static void Configure(StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval)
+    static void Configure(StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval, string schemaName = null)
     {
         configurer.Register(context =>
         {
             var rebusLoggerFactory = context.Get<IRebusLoggerFactory>();
             var asyncTaskFactory = context.Get<IAsyncTaskFactory>();
             var rebusTime = context.Get<IRebusTime>();
-            var transport = new PostgreSqlTransport(connectionProvider, tableName, inputQueueName, rebusLoggerFactory, asyncTaskFactory, rebusTime, expiredMessagesCleanupInterval);
+            var transport = new PostgreSqlTransport(connectionProvider, tableName, inputQueueName, rebusLoggerFactory, asyncTaskFactory, rebusTime, expiredMessagesCleanupInterval, schemaName);
             transport.EnsureTableIsCreated();
             return transport;
         });

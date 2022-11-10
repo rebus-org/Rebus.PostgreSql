@@ -9,15 +9,15 @@ public class PostgreSqlSagaStorageFactory : ISagaStorageFactory
 {
     public PostgreSqlSagaStorageFactory()
     {
-        PostgreSqlTestHelper.DropTable("saga_index");
-        PostgreSqlTestHelper.DropTable("saga_data");
+        PostgreSqlTestHelper.DropTable("sagas", "saga_index");
+        PostgreSqlTestHelper.DropTable("sagas","saga_data");
     }
 
     public ISagaStorage GetSagaStorage()
     {
         var serializer = new DefaultSagaSerializer();
         
-        var postgreSqlSagaStorage = new PostgreSqlSagaStorage(PostgreSqlTestHelper.ConnectionHelper, "saga_data", "saga_index", new ConsoleLoggerFactory(false), serializer);
+        var postgreSqlSagaStorage = new PostgreSqlSagaStorage(PostgreSqlTestHelper.ConnectionHelper, "saga_data", "saga_index", new ConsoleLoggerFactory(false), serializer, schemaName: "sagas");
         postgreSqlSagaStorage.EnsureTablesAreCreated();
         return postgreSqlSagaStorage;
     }
