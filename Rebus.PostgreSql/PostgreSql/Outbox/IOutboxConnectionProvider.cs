@@ -3,4 +3,5 @@
 interface IOutboxConnectionProvider
 {
     OutboxConnection GetDbConnection();
+    OutboxConnection GetDbConnectionWithoutTransaction();
 }

@@ -31,4 +31,21 @@ class OutboxConnectionProvider : IOutboxConnectionProvider
             throw;
         }
     }
+
+    public OutboxConnection GetDbConnectionWithoutTransaction()
+    {
+        var connection = new NpgsqlConnection(_connectionString);
+
+        try
+        {
+            connection.Open();
+
+            return new OutboxConnection(connection, null);
+        }
+        catch
+        {
+            connection.Dispose();
+            throw;
+        }
+    }
 }

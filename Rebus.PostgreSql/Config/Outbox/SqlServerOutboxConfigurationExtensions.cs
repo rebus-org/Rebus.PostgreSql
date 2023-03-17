@@ -5,6 +5,7 @@ using Rebus.Retry.Simple;
 using Rebus.PostgreSql.Outbox;
 using Rebus.Threading;
 using Rebus.Transport;
+using Rebus.Pipeline.Send;
 
 namespace Rebus.Config.Outbox;
 
@@ -54,6 +55,15 @@ public static class PostgreSqlOutboxConfigurationExtensions
                 var step = new OutboxIncomingStep(outboxConnectionProvider);
                 return new PipelineStepInjector(pipeline)
                     .OnReceive(step, PipelineRelativePosition.After, typeof(SimpleRetryStrategyStep));
+            });
+
+            o.Decorate<IPipeline>(c =>
+            {
+                var pipeline = c.Get<IPipeline>();
+                var outboxConnectionProvider = c.Get<IOutboxConnectionProvider>();
+                var step = new OutboxOutgoingStep(outboxConnectionProvider);
+                return new PipelineStepInjector(pipeline)
+                    .OnSend(step, PipelineRelativePosition.Before, typeof(SendOutgoingMessageStep));
             });
         });
 
