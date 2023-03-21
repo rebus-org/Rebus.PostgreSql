@@ -23,6 +23,6 @@ public class OutboxConnection
     internal OutboxConnection(NpgsqlConnection connection, NpgsqlTransaction transaction)
     {
         Connection = connection ?? throw new ArgumentNullException(nameof(connection));
-        Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+        Transaction = transaction;
     }
 }
