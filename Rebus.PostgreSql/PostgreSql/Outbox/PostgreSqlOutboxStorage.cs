@@ -141,7 +141,6 @@ CREATE TABLE {_tableName}
                 // define what it means to complete the batch
                 async Task Complete()
                 {
-                    //await CompleteMessages(connection, messages);
                     await connection.Complete();
                     await scope.CompleteAsync();
                 }
@@ -193,18 +192,6 @@ CREATE TABLE {_tableName}
             await command.ExecuteNonQueryAsync();
         }
     }
-
-    //async Task CompleteMessages(IDbConnection connection, IEnumerable<OutboxMessage> messages)
-    //{
-    //    using var command = connection.CreateCommand();
-
-    //    var ids = messages.Select(m => m.Id).ToList();
-    //    var idString = string.Join(", ", ids);
-
-    //    command.CommandText = $"UPDATE {_tableName} SET \"Sent\" = true WHERE \"Id\" IN ({idString})";
-
-    //    await command.ExecuteNonQueryAsync();
-    //}
 
     async Task<List<OutboxMessage>> GetOutboxMessages(IDbConnection connection, int maxMessageBatchSize, string correlationId)
     {
