@@ -215,7 +215,7 @@ CREATE TABLE {_tableName}
             command.CommandText = $@"
 SELECT ""Id"", ""DestinationAddress"", ""Headers"", ""Body""
 FROM {_tableName} WITH (UPDLOCK, READPAST)
-WHERE ""CorrelationId"" = @correlationId ""Sent"" = false
+WHERE ""CorrelationId"" = @correlationId AND ""Sent"" = false
 ORDER BY ""Id""
 FOR UPDATE SKIP LOCKED
 LIMIT {maxMessageBatchSize}";
