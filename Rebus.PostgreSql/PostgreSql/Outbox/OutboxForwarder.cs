@@ -44,14 +44,14 @@ class OutboxForwarder : IDisposable, IInitializable
         _outboxStorage = outboxStorage;
         _transport = transport;
         _forwarder = asyncTaskFactory.Create("OutboxForwarder", RunForwarder, intervalSeconds: 1);
-        _cleaner = asyncTaskFactory.Create("OutboxCleaner", RunCleaner, intervalSeconds: 120);
+        //_cleaner = asyncTaskFactory.Create("OutboxCleaner", RunCleaner, intervalSeconds: 120);
         _logger = rebusLoggerFactory.GetLogger<OutboxForwarder>();
     }
 
     public void Initialize()
     {
         _forwarder.Start();
-        _cleaner.Start();
+        //_cleaner.Start();
     }
 
     async Task RunForwarder()
@@ -98,34 +98,34 @@ class OutboxForwarder : IDisposable, IInitializable
         _logger.Debug("Successfully sent {count} messages", batch.Count);
     }
 
-    async Task RunCleaner()
-    {
-        _logger.Debug("Checking outbox storage for messages to be deleted");
-    }
+    //async Task RunCleaner()
+    //{
+    //    _logger.Debug("Checking outbox storage for messages to be deleted");
+    //}
 
-    public void TryEagerSend(IEnumerable<AbstractRebusTransport.OutgoingMessage> outgoingMessages, string correlationId)
-    {
-        var list = outgoingMessages.ToList();
+//    public void TryEagerSend(IEnumerable<AbstractRebusTransport.OutgoingMessage> outgoingMessages, string correlationId)
+//    {
+//        var list = outgoingMessages.ToList();
 
-#pragma warning disable CS4014
-        if (!list.Any()) return;
+//#pragma warning disable CS4014
+//        if (!list.Any()) return;
 
-        Task.Run(async () =>
-        {
-            try
-            {
-                using var batch = await _outboxStorage.GetNextMessageBatch(correlationId);
+//        Task.Run(async () =>
+//        {
+//            try
+//            {
+//                using var batch = await _outboxStorage.GetNextMessageBatch(correlationId);
 
-                await ProcessMessageBatch(batch, _cancellationTokenSource.Token);
+//                await ProcessMessageBatch(batch, _cancellationTokenSource.Token);
 
-                await batch.Complete();
-            }
-            catch (Exception)
-            {
-                // just leave sending to the background sender
-            }
-        });
-    }
+//                await batch.Complete();
+//            }
+//            catch (Exception)
+//            {
+//                // just leave sending to the background sender
+//            }
+//        });
+//    }
 
     public void Dispose()
     {

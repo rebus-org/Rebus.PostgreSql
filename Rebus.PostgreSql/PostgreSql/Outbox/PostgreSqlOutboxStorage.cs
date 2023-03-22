@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NpgsqlTypes;
 using Rebus.Bus;
+using Rebus.Config;
 using Rebus.Internals;
 using Rebus.Serialization;
 using Rebus.Transport;
@@ -141,7 +142,7 @@ CREATE TABLE {_tableName}
                 // define what it means to complete the batch
                 async Task Complete()
                 {
-                    await CompleteMessages(connection, messages);
+                    //await CompleteMessages(connection, messages);
                     await connection.Complete();
                     await scope.CompleteAsync();
                 }
@@ -194,17 +195,17 @@ CREATE TABLE {_tableName}
         }
     }
 
-    async Task CompleteMessages(IDbConnection connection, IEnumerable<OutboxMessage> messages)
-    {
-        using var command = connection.CreateCommand();
+    //async Task CompleteMessages(IDbConnection connection, IEnumerable<OutboxMessage> messages)
+    //{
+    //    using var command = connection.CreateCommand();
 
-        var ids = messages.Select(m => m.Id).ToList();
-        var idString = string.Join(", ", ids);
+    //    var ids = messages.Select(m => m.Id).ToList();
+    //    var idString = string.Join(", ", ids);
 
-        command.CommandText = $"UPDATE {_tableName} SET \"Sent\" = true WHERE \"Id\" IN ({idString})";
+    //    command.CommandText = $"UPDATE {_tableName} SET \"Sent\" = true WHERE \"Id\" IN ({idString})";
 
-        await command.ExecuteNonQueryAsync();
-    }
+    //    await command.ExecuteNonQueryAsync();
+    //}
 
     async Task<List<OutboxMessage>> GetOutboxMessages(IDbConnection connection, int maxMessageBatchSize, string correlationId)
     {
@@ -213,23 +214,34 @@ CREATE TABLE {_tableName}
         if (correlationId != null)
         {
             command.CommandText = $@"
-SELECT ""Id"", ""DestinationAddress"", ""Headers"", ""Body""
-FROM {_tableName} WITH (UPDLOCK, READPAST)
-WHERE ""CorrelationId"" = @correlationId AND ""Sent"" = false
-ORDER BY ""Id""
-FOR UPDATE SKIP LOCKED
-LIMIT {maxMessageBatchSize}";
+DELETE FROM {_tableName}
+WHERE ""Id"" in 
+(
+    select ""Id""
+    from {_tableName}
+    where ""CorrelationId"" = @correlationId
+    order by ""Id"" asc
+    for update skip locked
+    limit {maxMessageBatchSize}
+)
+returning ""Id"", ""DestinationAddress"", ""Headers"", ""Body""
+";
             command.Parameters.Add("correlationId", NpgsqlDbType.Varchar, 16).Value = correlationId;
         }
         else
         {
             command.CommandText = $@"
-SELECT ""Id"", ""DestinationAddress"", ""Headers"", ""Body""
-FROM {_tableName}
-WHERE ""Sent"" = false
-ORDER BY ""Id""
-FOR UPDATE SKIP LOCKED
-LIMIT {maxMessageBatchSize}";
+DELETE FROM {_tableName}
+WHERE ""Id"" in 
+(
+    select ""Id""
+    from {_tableName}
+    order by ""Id"" asc
+    for update skip locked
+    limit {maxMessageBatchSize}
+)
+returning ""Id"", ""DestinationAddress"", ""Headers"", ""Body""
+";
         }
 
         await using var reader = await command.ExecuteReaderAsync();
