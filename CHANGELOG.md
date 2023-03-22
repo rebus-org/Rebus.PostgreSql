@@ -68,15 +68,17 @@
 ## 8.1.0
 * Make saga data serializer configurable - thanks [mmdevterm]
 
-## 8.2.0-b2
+## 8.2.0-b3
 * Add outbox - thanks [matt-psaltis]
 * Add schema support - thanks [patrick11994]
+* Add ambient transaction support for outbox and fix bug in outbox storage - thanks [jwoots]
 
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
 [enriquein]: https://github.com/enriquein
 [jmkelly]: https://github.com/jmkelly
+[jwoots]: https://github.com/jwoots
 [KasperDamgaard]: https://github.com/KasperDamgaard
 [knutsr]: https://github.com/knutsr
 [Laurianti]: https://github.com/Laurianti
