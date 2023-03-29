@@ -6,7 +6,6 @@ using NUnit.Framework;
 using Rebus.Activation;
 using Rebus.Config;
 using Rebus.Logging;
-using Rebus.PostgreSql.Transport;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Extensions;
 using Rebus.Tests.Contracts.Utilities;
@@ -18,6 +17,7 @@ public class TestPostgreSqlTransportCleanup : FixtureBase
 {
     BuiltinHandlerActivator _activator;
     ListLoggerFactory _loggerFactory;
+    IBusStarter _starter;
 
     protected override void SetUp()
     {
@@ -29,14 +29,14 @@ public class TestPostgreSqlTransportCleanup : FixtureBase
 
         _loggerFactory = new ListLoggerFactory(outputToConsole: true);
 
-        Configure.With(_activator)
+        _starter = Configure.With(_activator)
             .Logging(l => l.Use(_loggerFactory))
             .Transport(t => t.UsePostgreSql(PostgreSqlTestHelper.ConnectionString, "Messages", queueName))
-            .Start();
+            .Create();
     }
 
     [Test]
-    public void DoesNotBarfInTheBackground()
+    public async Task DoesNotBarfInTheBackground()
     {
         var doneHandlingMessage = new ManualResetEvent(false);
 
@@ -53,7 +53,9 @@ public class TestPostgreSqlTransportCleanup : FixtureBase
             doneHandlingMessage.Set();
         });
 
-        _activator.Bus.SendLocal("hej med dig min ven!").Wait();
+        _starter.Start();
+
+        await _activator.Bus.SendLocal("hej med dig min ven!");
 
         doneHandlingMessage.WaitOrDie(TimeSpan.FromMinutes(2));
 
