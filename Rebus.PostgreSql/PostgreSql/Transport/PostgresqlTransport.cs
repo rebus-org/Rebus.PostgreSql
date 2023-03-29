@@ -11,7 +11,6 @@ using Rebus.Logging;
 using Rebus.Messages;
 using Rebus.Threading;
 using Rebus.Transport;
-using System.Linq;
 using Npgsql;
 using Rebus.Extensions;
 using Rebus.Internals;
@@ -83,7 +82,15 @@ namespace Rebus.PostgreSql.Transport
         /// <inheritdoc />
         public async Task Send(string destinationAddress, TransportMessage message, ITransactionContext context)
         {
-            var connection = await GetConnection(context);
+            var connection = await context.GetOrAdd(CurrentConnectionKey, async () =>
+            {
+                var dbConnection = await _connectionHelper.GetConnection();
+                var connectionWrapper = new ConnectionWrapper(dbConnection);
+                context.OnCommit(async _ => await dbConnection.Complete());
+                context.OnDisposed(_ => connectionWrapper.Dispose());
+                return connectionWrapper;
+            });
+
             var semaphore = connection.Semaphore;
 
             // serialize access to the connection
@@ -147,7 +154,14 @@ VALUES
         {
             using (await _receiveBottleneck.Enter(cancellationToken))
             {
-                var connection = await GetConnection(context);
+                var connection = await context.GetOrAdd(CurrentConnectionKey, async () =>
+                {
+                    var dbConnection = await _connectionHelper.GetConnection();
+                    var connectionWrapper = new ConnectionWrapper(dbConnection);
+                    context.OnAck(async _ => await dbConnection.Complete());
+                    context.OnDisposed(_ => connectionWrapper.Dispose());
+                    return connectionWrapper;
+                });
 
                 TransportMessage receivedTransportMessage;
 
@@ -354,21 +368,6 @@ CREATE INDEX ""idx_dequeue_{_tableName.Name}"" ON {_tableName}
                 Semaphore?.Dispose();
             }
         }
-
-        Task<ConnectionWrapper> GetConnection(ITransactionContext context)
-        {
-            return context
-                .GetOrAdd(CurrentConnectionKey,
-                    async () =>
-                    {
-                        var dbConnection = await _connectionHelper.GetConnection();
-                        var connectionWrapper = new ConnectionWrapper(dbConnection);
-                        context.OnCommitted(async _ => await dbConnection.Complete());
-                        context.OnDisposed(_ => connectionWrapper.Dispose());
-                        return connectionWrapper;
-                    });
-        }
-
 
         /// <inheritdoc />
         public void Dispose()

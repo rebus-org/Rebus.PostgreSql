@@ -54,7 +54,7 @@ public static class PostgreSqlOutboxConfigurationExtensions
                 var outboxConnectionProvider = c.Get<IOutboxConnectionProvider>();
                 var step = new OutboxIncomingStep(outboxConnectionProvider);
                 return new PipelineStepInjector(pipeline)
-                    .OnReceive(step, PipelineRelativePosition.After, typeof(SimpleRetryStrategyStep));
+                    .OnReceive(step, PipelineRelativePosition.After, typeof(DefaultRetryStep));
             });
 
             o.Decorate<IPipeline>(c =>

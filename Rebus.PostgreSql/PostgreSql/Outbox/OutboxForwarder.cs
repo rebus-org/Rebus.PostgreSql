@@ -103,11 +103,10 @@ class OutboxForwarder : IDisposable, IInitializable
         _logger.Debug("Checking outbox storage for messages to be deleted");
     }
 
-    public void TryEagerSend(IEnumerable<AbstractRebusTransport.OutgoingMessage> outgoingMessages, string correlationId)
+    public void TryEagerSend(IEnumerable<OutgoingTransportMessage> outgoingMessages, string correlationId)
     {
         var list = outgoingMessages.ToList();
 
-#pragma warning disable CS4014
         if (!list.Any()) return;
 
         Task.Run(async () =>

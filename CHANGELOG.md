@@ -73,6 +73,9 @@
 * Add schema support - thanks [patrick11994]
 * Add ambient transaction support for outbox and fix bug in outbox storage - thanks [jwoots]
 
+## 9.0.0-alpha01
+* Update to Rebus 8
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc

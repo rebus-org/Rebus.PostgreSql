@@ -20,4 +20,4 @@ build_script:
   - dotnet build -c Release --no-restore
 
 test_script:
-  - dotnet test --no-restore
+  - dotnet test -c Release --no-restore

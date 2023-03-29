@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
@@ -49,21 +48,21 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
             if (tableNames.Contains(_tableName)) return;
 
             _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
-            
+
             var schemaNames = connection.GetSchemas();
 
             if (!schemaNames.Contains(_tableName.Schema))
             {
                 _log.Info("Schema {schemaName} does not exist - it will be created now", _tableName.Schema);
-                
+
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
-                    
+
                     command.ExecuteNonQuery();
                 }
             }
-            
+
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = $@"
@@ -75,7 +74,7 @@ CREATE TABLE {_tableName} (
 ";
                 command.ExecuteNonQuery();
             }
-            
+
             await connection.Complete();
         });
     }
@@ -83,7 +82,7 @@ CREATE TABLE {_tableName} (
     /// <summary>
     /// Gets all destination addresses for the given topic
     /// </summary>
-    public async Task<string[]> GetSubscriberAddresses(string topic)
+    public async Task<IReadOnlyList<string>> GetSubscriberAddresses(string topic)
     {
         using var connection = await _connectionHelper.GetConnection();
 
@@ -110,9 +109,9 @@ CREATE TABLE {_tableName} (
     public async Task RegisterSubscriber(string topic, string subscriberAddress)
     {
         using var connection = await _connectionHelper.GetConnection();
-        
+
         using var command = connection.CreateCommand();
-        
+
         command.CommandText = $@"insert into {_tableName} (""topic"", ""address"") values (@topic, @address)";
 
         command.Parameters.AddWithValue("topic", NpgsqlDbType.Text, topic);
@@ -138,7 +137,7 @@ CREATE TABLE {_tableName} (
         using var connection = await _connectionHelper.GetConnection();
 
         using var command = connection.CreateCommand();
-        
+
         command.CommandText = $@"delete from {_tableName} where ""topic"" = @topic and ""address"" = @address;";
 
         command.Parameters.AddWithValue("topic", NpgsqlDbType.Text, topic);
