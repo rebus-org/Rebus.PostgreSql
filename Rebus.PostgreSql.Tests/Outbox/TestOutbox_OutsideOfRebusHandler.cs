@@ -220,7 +220,6 @@ public class TestOutbox_OutsideOfRebusHandler : FixtureBase
 
         Configure.With(activator)
             .Transport(t => t.UseInMemoryTransport(_network, queueName))
-            .Subscriptions(s => s.StoreInMemory(_subscriberStore))
             .Start();
 
         return activator.Bus;
@@ -240,7 +239,6 @@ public class TestOutbox_OutsideOfRebusHandler : FixtureBase
                 }
             })
             .Routing(r => routing?.Invoke(r))
-            .Subscriptions(s => s.StoreInMemory(_subscriberStore))
             .Outbox(o => o.StoreInPostgreSql(ConnectionString, "RebusOutbox"))
             .Start();
     }

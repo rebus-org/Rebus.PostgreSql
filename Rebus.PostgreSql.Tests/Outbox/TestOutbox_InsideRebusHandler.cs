@@ -95,7 +95,6 @@ public class TestOutbox_InsideRebusHandler : FixtureBase
                         flakySenderTransportDecoratorSettings));
                 }
             })
-            .Subscriptions(s => s.StoreInMemory(_subscriberStore))
             .Outbox(o => o.StoreInPostgreSql(ConnectionString, "RebusOutbox"))
             .Start();
 
@@ -107,7 +106,6 @@ public class TestOutbox_InsideRebusHandler : FixtureBase
         return Configure.With(new BuiltinHandlerActivator())
             .Transport(t => t.UseInMemoryTransportAsOneWayClient(_network))
             .Routing(r => routing?.Invoke(r))
-            .Subscriptions(s => s.StoreInMemory(_subscriberStore))
             .Start();
     }
 
