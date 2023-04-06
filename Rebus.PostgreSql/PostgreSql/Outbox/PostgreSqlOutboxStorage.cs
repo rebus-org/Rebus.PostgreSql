@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using NpgsqlTypes;
 using Rebus.Bus;
-using Rebus.Config;
 using Rebus.Internals;
 using Rebus.Serialization;
 using Rebus.Transport;

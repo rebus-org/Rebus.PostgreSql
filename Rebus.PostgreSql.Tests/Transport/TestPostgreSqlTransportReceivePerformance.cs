@@ -8,7 +8,6 @@ using Rebus.Config;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Utilities;
 using Rebus.Logging;
-using Rebus.PostgreSql.Transport;
 
 
 #pragma warning disable 1998

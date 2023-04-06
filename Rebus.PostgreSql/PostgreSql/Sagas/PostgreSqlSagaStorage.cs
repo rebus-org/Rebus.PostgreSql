@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 using Rebus.Exceptions;
-using Rebus.Extensions;
 using Rebus.Logging;
 using Rebus.PostgreSql.Reflection;
 using Rebus.Sagas;
-using Rebus.Serialization;
 
 namespace Rebus.PostgreSql.Sagas;
 

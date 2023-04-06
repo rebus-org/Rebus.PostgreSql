@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Rebus.Extensions;
 using Rebus.Logging;
 using Rebus.PostgreSql.Transport;
 using Rebus.Tests.Contracts;
