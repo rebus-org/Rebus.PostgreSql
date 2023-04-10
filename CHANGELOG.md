@@ -73,9 +73,10 @@
 * Add schema support - thanks [patrick11994]
 * Add ambient transaction support for outbox and fix bug in outbox storage - thanks [jwoots]
 
-## 9.0.0-alpha02
+## 9.0.0-alpha03
 * Update to Rebus 8
 * Clean up outbox messages as they're processed - thanks [jwoots] 
+* Expose optional `schemaName` parameter from underlying configuration method
 
 ---
 

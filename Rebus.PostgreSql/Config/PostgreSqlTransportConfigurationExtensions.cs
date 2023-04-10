@@ -21,9 +21,16 @@ public static class PostgreSqlTransportConfigurationExtensions
     /// store messages, and the "queue" specified by <paramref name="inputQueueName"/> will be used when querying for messages.
     /// The message table will automatically be created if it does not exist.
     /// </summary>
-    public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval = null)
+    public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval = null, string schemaName = null)
     {
-        UsePostgreSql(configurer, new PostgresConnectionHelper(connectionString), tableName, inputQueueName, expiredMessagesCleanupInterval);
+        UsePostgreSql(
+            configurer: configurer,
+            connectionProvider: new PostgresConnectionHelper(connectionString),
+            tableName: tableName,
+            inputQueueName: inputQueueName,
+            expiredMessagesCleanupInterval: expiredMessagesCleanupInterval,
+            schemaName: schemaName
+        );
     }
 
     /// <summary>
@@ -31,9 +38,16 @@ public static class PostgreSqlTransportConfigurationExtensions
     /// store messages, and the "queue" specified by <paramref name="inputQueueName"/> will be used when querying for messages.
     /// The message table will automatically be created if it does not exist.
     /// </summary>
-    public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval = null)
+    public static void UsePostgreSql(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, string inputQueueName, TimeSpan? expiredMessagesCleanupInterval = null, string schemaName = null)
     {
-        Configure(configurer, connectionProvider, tableName, inputQueueName, expiredMessagesCleanupInterval);
+        Configure(
+            configurer: configurer,
+            connectionProvider: connectionProvider,
+            tableName: tableName,
+            inputQueueName: inputQueueName,
+            expiredMessagesCleanupInterval: expiredMessagesCleanupInterval,
+            schemaName: schemaName
+        );
     }
 
     /// <summary>
@@ -41,9 +55,15 @@ public static class PostgreSqlTransportConfigurationExtensions
     /// The table specified by <paramref name="tableName"/> will be used to store messages.
     /// The message table will automatically be created if it does not exist.
     /// </summary>
-    public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, TimeSpan? expiredMessagesCleanupInterval = null)
+    public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, string connectionString, string tableName, TimeSpan? expiredMessagesCleanupInterval = null, string schemaName = null)
     {
-        UsePostgreSqlAsOneWayClient(configurer, new PostgresConnectionHelper(connectionString), tableName, expiredMessagesCleanupInterval);
+        UsePostgreSqlAsOneWayClient(
+            configurer: configurer,
+            connectionProvider: new PostgresConnectionHelper(connectionString),
+            tableName: tableName,
+            expiredMessagesCleanupInterval: expiredMessagesCleanupInterval,
+            schemaName: schemaName
+        );
     }
 
     /// <summary>
@@ -51,9 +71,17 @@ public static class PostgreSqlTransportConfigurationExtensions
     /// The table specified by <paramref name="tableName"/> will be used to store messages.
     /// The message table will automatically be created if it does not exist.
     /// </summary>
-    public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, TimeSpan? expiredMessagesCleanupInterval = null)
+    public static void UsePostgreSqlAsOneWayClient(this StandardConfigurer<ITransport> configurer, IPostgresConnectionProvider connectionProvider, string tableName, TimeSpan? expiredMessagesCleanupInterval = null, string schemaName = null)
     {
-        Configure(configurer, connectionProvider, tableName, null, expiredMessagesCleanupInterval);
+        Configure(
+            configurer: configurer,
+            connectionProvider: connectionProvider,
+            tableName: tableName,
+            inputQueueName: null,
+            expiredMessagesCleanupInterval: expiredMessagesCleanupInterval,
+            schemaName: schemaName
+        );
+
         OneWayClientBackdoor.ConfigureOneWayClient(configurer);
     }
 
