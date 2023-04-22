@@ -126,8 +126,8 @@ VALUES
     @headers,
     @body,
     @priority,
-    clock_timestamp() + @visible,
-    clock_timestamp() + @ttlseconds
+    now() + @visible,
+    now() + @ttlseconds
 )";
 
             var headers = message.Headers.Clone();
@@ -173,8 +173,8 @@ where id =
 (
     select id from {_tableName}
     where recipient = @recipient
-    and visible < clock_timestamp()
-    and expiration > clock_timestamp() 
+    and visible < now()
+    and expiration > now() 
     order by priority desc, visible asc, id asc
     for update skip locked
     limit 1
@@ -219,7 +219,7 @@ body
                     command.CommandText =
                         $@"
                 delete from {_tableName} 
-                where expiration < clock_timestamp()
+                where expiration < now()
 ";
                     affectedRows = await command.ExecuteNonQueryAsync();
                 }
@@ -319,6 +319,11 @@ CREATE INDEX ""idx_dequeue_{_tableName.Name}"" ON {_tableName}
     priority DESC,
     visible ASC,
     id ASC
+);
+----
+CREATE INDEX ""idx_expiration_{_tableName.Name}"" ON {_tableName}
+(
+ expiration
 );
 ");
 
