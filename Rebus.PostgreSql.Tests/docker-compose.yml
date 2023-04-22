@@ -1,0 +1,23 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all 
+    environment:
+      POSTGRES_USER: postgres # The PostgreSQL user (useful to connect to the database)
+      POSTGRES_PASSWORD: postgres # The PostgreSQL password (useful to connect to the database)
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 8082:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@mailinator.com # The PostgreSQL user (useful to connect to the database)
+      PGADMIN_DEFAULT_PASSWORD: postgres # The PostgreSQL password (useful to connect to the database)
