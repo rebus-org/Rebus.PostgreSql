@@ -41,7 +41,8 @@ public class TestPostgreSqlTransportReceivePerformance : FixtureBase
     }
 
     [TestCase(1000)]
-    public async Task NizzleName(int messageCount)
+    [TestCase(10000)]
+    public async Task CheckReceivePerformance(int messageCount)
     {
 
         Console.WriteLine($"Sending {messageCount} messages...");
@@ -49,7 +50,7 @@ public class TestPostgreSqlTransportReceivePerformance : FixtureBase
         await Task.WhenAll(Enumerable.Range(0, messageCount)
             .Select(i => _adapter.Bus.SendLocal($"THIS IS MESSAGE {i}")));
 
-        var counter = new SharedCounter(messageCount);
+        var counter = Using(new SharedCounter(messageCount));
 
         _adapter.Handle<string>(async message => counter.Decrement());
 
@@ -59,7 +60,7 @@ public class TestPostgreSqlTransportReceivePerformance : FixtureBase
 
         _adapter.Bus.Advanced.Workers.SetNumberOfWorkers(3);
 
-        counter.WaitForResetEvent(messageCount / 500 + 7);
+        counter.WaitForResetEvent(timeoutSeconds: messageCount / 100 + 5);
 
         var elapsedSeconds = stopwtach.Elapsed.TotalSeconds;
 
