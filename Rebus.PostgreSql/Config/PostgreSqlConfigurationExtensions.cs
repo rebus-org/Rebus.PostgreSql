@@ -65,7 +65,7 @@ public static class PostgreSqlConfigurationExtensions
         configurer.Register(c =>
         {
             var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-            var serializer = c.Has<ISagaSerializer>() ? c.Get<ISagaSerializer>() : new DefaultSagaSerializer();
+            var serializer = c.Has<ISagaSerializer>(false) ? c.Get<ISagaSerializer>() : new DefaultSagaSerializer();
 
             var sagaStorage = new PostgreSqlSagaStorage(connectionProvider, dataTableName, indexTableName, rebusLoggerFactory, serializer, schemaName);
 
