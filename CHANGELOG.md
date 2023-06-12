@@ -73,11 +73,12 @@
 * Add schema support - thanks [patrick11994]
 * Add ambient transaction support for outbox and fix bug in outbox storage - thanks [jwoots]
 
-## 9.0.0-alpha04
+## 9.0.0-alpha05
 * Update to Rebus 8
 * Clean up outbox messages as they're processed - thanks [jwoots] 
 * Expose optional `schemaName` parameter from underlying configuration method
 * Use now() instead of clock_timestamp() to allow better index on cleanup deletes - thanks [jmkelly]
+* Fix bug that would ignore it when a custom saga serializer was registered - thanks [mfahadi]
 
 ---
 
@@ -90,6 +91,7 @@
 [Laurianti]: https://github.com/Laurianti
 [mastersign]: https://github.com/mastersign
 [matt-psaltis]: https://github.com/matt-psaltis
+[mfahadi]: https://github.com/mfahadi
 [mmdevterm]: https://github.com/mmdevterm
 [mts44]: https://github.com/mts44
 [patrick11994]: https://github.com/patrick11994
