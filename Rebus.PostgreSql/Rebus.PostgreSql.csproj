@@ -18,7 +18,7 @@
 	
 	<ItemGroup>
 		<PackageReference Include="npgsql" Version="7.0.6" />
-		<PackageReference Include="rebus" Version="8.0.0-alpha11" />
+		<PackageReference Include="rebus" Version="8.0.1" />
 	</ItemGroup>
 	
 	<ItemGroup>
