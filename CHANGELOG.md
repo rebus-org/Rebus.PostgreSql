@@ -80,6 +80,9 @@
 * Use now() instead of clock_timestamp() to allow better index on cleanup deletes - thanks [jmkelly]
 * Fix bug that would ignore it when a custom saga serializer was registered - thanks [mfahadi]
 
+## 9.0.1
+* Fix bug that would require schema name to be explicitly specified for the saga persister, even though it's optional
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc

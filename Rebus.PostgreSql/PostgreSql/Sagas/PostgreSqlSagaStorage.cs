@@ -34,7 +34,7 @@ public class PostgreSqlSagaStorage : ISagaStorage
         if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
         _dataTableName = new TableName(schemaName ?? TableName.DefaultSchemaName, dataTableName ?? throw new ArgumentNullException(nameof(dataTableName)));
-        _indexTableName = new TableName(schemaName, indexTableName ?? throw new ArgumentNullException(nameof(indexTableName)));
+        _indexTableName = new TableName(schemaName ?? TableName.DefaultSchemaName, indexTableName ?? throw new ArgumentNullException(nameof(indexTableName)));
         _sagaSerializer = sagaSerializer;
         _log = rebusLoggerFactory.GetLogger<PostgreSqlSagaStorage>();
     }
