@@ -39,7 +39,7 @@ public class PostgreSqlSubscriptionStorage : ISubscriptionStorage
     /// </summary>
     public void EnsureTableIsCreated()
     {
-        AsyncHelpers.RunSync(async () =>
+        async Task InnerEnsureTableIsCreated()
         {
             using var connection = await _connectionHelper.GetConnection();
 
@@ -76,7 +76,17 @@ CREATE TABLE {_tableName} (
             }
 
             await connection.Complete();
-        });
+        }
+
+        var retrier = new Retrier([
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(4),
+            TimeSpan.FromSeconds(5)
+        ]);
+
+        AsyncHelpers.RunSync(() => retrier.ExecuteAsync(InnerEnsureTableIsCreated));
     }
 
     /// <summary>

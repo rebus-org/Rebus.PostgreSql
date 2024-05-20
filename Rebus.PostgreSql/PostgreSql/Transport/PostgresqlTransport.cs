@@ -248,7 +248,15 @@ body
         /// </summary>
         public void EnsureTableIsCreated()
         {
-            AsyncHelpers.RunSync(EnsureTableIsCreatedAsync);
+            var retrier = new Retrier([
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(4),
+                TimeSpan.FromSeconds(5)
+            ]);
+
+            AsyncHelpers.RunSync(() => retrier.ExecuteAsync(EnsureTableIsCreatedAsync));
         }
 
         /// <summary>

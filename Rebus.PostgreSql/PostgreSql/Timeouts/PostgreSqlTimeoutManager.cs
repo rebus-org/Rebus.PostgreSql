@@ -123,10 +123,10 @@ FOR UPDATE;
     /// </summary>
     public void EnsureTableIsCreated()
     {
-        AsyncHelpers.RunSync(async () =>
+        async Task InnerEnsureTableIsCreated()
         {
             using var connection = await _connectionHelper.GetConnection();
-            
+
             var tableNames = connection.GetTableNames();
 
             if (tableNames.Contains(_tableName))
@@ -135,25 +135,24 @@ FOR UPDATE;
             }
 
             _log.Info("Table {tableName} does not exist - it will be created now", _tableName);
-            
+
             var schemaNames = connection.GetSchemas();
 
             if (!schemaNames.Contains(_tableName.Schema))
             {
                 _log.Info("Schema {schemaName} does not exist - it will be created now", _tableName.Schema);
-                
+
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
-                    
+
                     command.ExecuteNonQuery();
                 }
             }
-            
+
             using (var command = connection.CreateCommand())
             {
-                command.CommandText =
-                    $@"
+                command.CommandText = $@"
 CREATE TABLE {_tableName} (
     ""id"" BIGSERIAL NOT NULL,
     ""due_time"" TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -176,6 +175,16 @@ CREATE INDEX ON {_tableName} (""due_time"");
             }
 
             await connection.Complete();
-        });
+        }
+
+        var retrier = new Retrier([
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(4),
+            TimeSpan.FromSeconds(5)
+        ]);
+
+        AsyncHelpers.RunSync(() => retrier.ExecuteAsync(InnerEnsureTableIsCreated));
     }
 }

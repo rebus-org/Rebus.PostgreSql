@@ -25,7 +25,7 @@ public class PostgreSqlSagaSnapshotStorage : ISagaSnapshotStorage
     public PostgreSqlSagaSnapshotStorage(IPostgresConnectionProvider connectionHelper, string tableName, string schemaName = null)
     {
         if (tableName == null) throw new ArgumentNullException(nameof(tableName));
-        
+
         _connectionHelper = connectionHelper ?? throw new ArgumentNullException(nameof(connectionHelper));
         _tableName = new TableName(schemaName ?? TableName.DefaultSchemaName, tableName);
     }
@@ -55,7 +55,7 @@ INSERT
 
                 await command.ExecuteNonQueryAsync();
             }
-                
+
             await connection.Complete();
         }
     }
@@ -65,7 +65,7 @@ INSERT
     /// </summary>
     public void EnsureTableIsCreated()
     {
-        AsyncHelpers.RunSync(async () =>
+        async Task InnerEnsureTableIsCreated()
         {
             using (var connection = await _connectionHelper.GetConnection())
             {
@@ -80,15 +80,14 @@ INSERT
                     using (var command = connection.CreateCommand())
                     {
                         command.CommandText = $@"CREATE SCHEMA ""{_tableName.Schema}"";";
-                        
+
                         command.ExecuteNonQuery();
                     }
                 }
 
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText =
-                        $@"
+                    command.CommandText = $@"
 CREATE TABLE {_tableName} (
 	""id"" UUID NOT NULL,
 	""revision"" INTEGER NOT NULL,
@@ -103,6 +102,16 @@ CREATE TABLE {_tableName} (
 
                 await connection.Complete();
             }
-        });
+        }
+
+        var retrier = new Retrier([
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(4),
+            TimeSpan.FromSeconds(5)
+        ]);
+
+        AsyncHelpers.RunSync(() => retrier.ExecuteAsync(InnerEnsureTableIsCreated));
     }
 }

@@ -87,6 +87,9 @@
 * Update Npgsql dependency to 8.0.3
 * Update Rebus dependency to 8.4.2
 
+## 9.1.1
+* Add retry around schema initialization routines, because they're all idempotent, and they can collide when starting things up in parallel
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
