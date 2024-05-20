@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Rebus.Tests.Contracts.Extensions;
 using Testcontainers.PostgreSql;
 
 namespace Rebus.PostgreSql.Tests;
@@ -14,7 +17,28 @@ public class PostgresTestContainerManager
     {
         _container = new PostgreSqlBuilder().Build();
 
-        _container.StartAsync().GetAwaiter().GetResult();
+        ExceptionDispatchInfo exceptionDispatchInfo = null;
+
+        using var done = new ManualResetEvent(initialState: false);
+
+        Task.Run(async () =>
+        {
+            try
+            {
+                await _container.StartAsync();
+            }
+            catch (Exception exception)
+            {
+                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
+            }
+            finally
+            {
+                done.Set();
+            }
+        });
+
+        done.WaitOrDie(TimeSpan.FromMinutes(1), "PostgreSQL container did not start within 1 minute");
+        exceptionDispatchInfo?.Throw();
 
         return _container.GetConnectionString();
     });

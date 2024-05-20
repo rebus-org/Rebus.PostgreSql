@@ -138,7 +138,7 @@ SELECT s.""data""
     FROM {_dataTableName} s 
     WHERE s.""id"" = @id
 ";
-                    command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = ToGuid(propertyValue);
+                    command.Parameters.Add("id", NpgsqlDbType.Uuid).Value = ToGuid(propertyValue) ?? DBNull.Value;
                 }
                 else
                 {
@@ -186,6 +186,17 @@ SELECT s.""data""
 
     static object ToGuid(object propertyValue)
     {
+        if (ReferenceEquals(propertyValue, null)) return null;
+
+        if (propertyValue is string stringPropertyValue)
+        {
+            if (string.IsNullOrWhiteSpace(stringPropertyValue)) return null;
+
+            return Guid.TryParse(stringPropertyValue, out var result)
+                ? result
+                : throw new FormatException($"Could not parse the string '{stringPropertyValue}' into a Guid");
+        }
+
         return Convert.ChangeType(propertyValue, typeof(Guid));
     }
 
