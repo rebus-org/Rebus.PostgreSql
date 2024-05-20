@@ -21,7 +21,7 @@ static class PostgreSqlMagic
         return GetTableNames(command);
     }
 
-    private static List<TableName> GetTableNames(NpgsqlCommand command)
+    static List<TableName> GetTableNames(NpgsqlCommand command)
     {
         var tableNames = new List<TableName>();
         command.CommandText = "select * from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')";
@@ -53,7 +53,7 @@ static class PostgreSqlMagic
         return GetSchemas(command);
     }
 
-    private static List<string> GetSchemas(NpgsqlCommand command)
+    static List<string> GetSchemas(NpgsqlCommand command)
     {
         var schemaNames = new List<string>();
         command.CommandText = "SELECT schema_name FROM information_schema.schemata;";
@@ -98,7 +98,7 @@ static class PostgreSqlMagic
         return results;
     }
 
-    private static NpgsqlDbType GetDbType(string typeString)
+    static NpgsqlDbType GetDbType(string typeString)
     {
         try
         {

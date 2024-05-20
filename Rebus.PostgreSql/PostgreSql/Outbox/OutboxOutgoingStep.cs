@@ -7,9 +7,9 @@ using System.Transactions;
 
 namespace Rebus.PostgreSql.Outbox;
 
-internal class OutboxOutgoingStep : IOutgoingStep
+class OutboxOutgoingStep : IOutgoingStep
 {
-    private readonly IOutboxConnectionProvider _outboxConnectionProvider;
+    readonly IOutboxConnectionProvider _outboxConnectionProvider;
 
     public OutboxOutgoingStep(IOutboxConnectionProvider outboxConnectionProvider)
     {

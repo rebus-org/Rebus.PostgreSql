@@ -9,6 +9,7 @@ public class PostgreSqlTestHelper
 {
     const string TableDoesNotExist = "42P01";
     const string SchemaDoesNotExist = "3F000";
+
     static readonly IPostgresConnectionProvider PostgresConnectionHelper = new PostgresConnectionHelper(ConnectionString);
 
     public static string DatabaseName => $"rebus2_test_{TestConfig.Suffix}".TrimEnd('_');
@@ -47,7 +48,7 @@ public class PostgreSqlTestHelper
     {
         DropTable(string.Empty, table);
     }
-    
+
     public static void DropTable(string schema, string table)
     {
         AsyncHelpers.RunSync(async () =>
@@ -75,7 +76,19 @@ public class PostgreSqlTestHelper
 
     static string GetConnectionStringForDatabase(string databaseName)
     {
-        return Environment.GetEnvironmentVariable("REBUS_POSTGRES")
+        var envConnectionString = Environment.GetEnvironmentVariable("REBUS_POSTGRES");
+
+        if (!string.IsNullOrWhiteSpace(envConnectionString))
+        {
+            if (envConnectionString.Replace(" ", "").Equals("usedockercontainer=true", StringComparison.OrdinalIgnoreCase))
+            {
+                return PostgresTestContainerManager.TestContainerConnectionString.Value;
+            }
+
+            return envConnectionString;
+        }
+
+        return envConnectionString
                ?? $"server=localhost; database={databaseName}; user id=postgres; password=postgres;maximum pool size=30;";
     }
 }
