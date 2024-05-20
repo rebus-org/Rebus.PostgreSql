@@ -130,9 +130,12 @@ public class TestPostgreSqlTransport : FixtureBase
 
         if (kvpsDifferentThanOne.Any())
         {
-            Assert.Fail(@"Oh no! the following IDs were not received exactly once:
-{0}",
-                string.Join(Environment.NewLine, kvpsDifferentThanOne.Select(kvp => $"   {kvp.Key}: {kvp.Value}")));
+            var message = $@"Oh no! the following IDs were not received exactly once:
+
+{string.Join(Environment.NewLine, kvpsDifferentThanOne.Select(kvp => $"   {kvp.Key}: {kvp.Value}"))}";
+            
+
+            Assert.Fail(message);
         }
     }
 

@@ -83,6 +83,10 @@
 ## 9.0.1
 * Fix bug that would require schema name to be explicitly specified for the saga persister, even though it's optional
 
+## 9.1.0
+* Update Npgsql dependency to 8.0.3
+* Update Rebus dependency to 8.4.2
+
 ---
 
 [dtabuenc]: https://github.com/dtabuenc
